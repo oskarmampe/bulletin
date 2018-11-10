@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import model.OMUser;
 import model.SpaceUtils;
 import net.jini.core.transaction.server.TransactionManager;
 import net.jini.space.JavaSpace;
@@ -18,6 +19,7 @@ public class App extends Application {
 
     public static JavaSpace mSpace;
     public static TransactionManager mTransactionManager;
+    public static OMUser user;
 
     @Override
     public void start(Stage primaryStage) throws Exception {

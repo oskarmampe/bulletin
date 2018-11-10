@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<GridPane fx:controller="controller.SendController"
+<GridPane fx:controller="controller.CreateTopicController"
           xmlns:fx="http://javafx.com/fxml"
           alignment="center"
           hgap="10"
@@ -16,7 +16,7 @@
 
     <Text text="Send Object: " GridPane.rowIndex="0" GridPane.columnIndex="0"  />
     <TextField fx:id="objTextField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
-    <Button text="Send" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#testActionSend"/>
+    <Button text="Send" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#createTopic"/>
 
 
     <Button text="Change Scene" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#changeScene"/>

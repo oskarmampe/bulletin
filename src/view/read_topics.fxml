@@ -9,12 +9,11 @@
 <?import javafx.scene.text.Text?>
 <GridPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="controller.TopicsController"
+            fx:controller="controller.ReadAllTopicController"
             prefHeight="400.0" prefWidth="600.0">
 
     <Text text="Received Object: " GridPane.rowIndex="0" GridPane.columnIndex="0"  />
-    <TextField fx:id="receiveField" GridPane.rowIndex="0" GridPane.columnIndex="1" editable="false"/>
-    <Button text="Receive" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#testActionReceive"/>
+    <ListView fx:id="listView" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
     <Button text="Change Scene" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#changeScene"/>
 

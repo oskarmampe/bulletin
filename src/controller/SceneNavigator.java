@@ -8,8 +8,8 @@ public class SceneNavigator {
 
     public static final String MAIN = "../view/main.fxml";
     public static final String WELCOME = "../view/welcome.fxml";
-    public static final String SEND = "../view/send.fxml";
-    public static final String TOPICS = "../view/topics.fxml";
+    public static final String SEND = "../view/create_topic.fxml";
+    public static final String TOPICS = "../view/read_topics.fxml";
 
     private static MainController mainController;
 
