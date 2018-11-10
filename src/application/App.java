@@ -24,8 +24,7 @@ public class App extends Application {
         //SETTING STAGE
         primaryStage.setTitle("Assignment");
 
-        SceneNavigator.setMainController(new MainController(primaryStage));
-        SceneNavigator.loadScene(SceneNavigator.MAIN);
+        primaryStage.setScene(createScene(loadMainPane()));
 
         //Needed to close properly, without this, the application is still running in the background
         primaryStage.setOnCloseRequest(t -> {
@@ -36,6 +35,41 @@ public class App extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Loads the main fxml layout.
+     * Sets up the vista switching VistaNavigator.
+     * Loads the first vista into the fxml layout.
+     *
+     * @return the loaded pane.
+     * @throws IOException if the pane could not be loaded.
+     */
+    private Pane loadMainPane() throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+
+        Pane mainPane = (Pane) loader.load(getClass().getResourceAsStream(SceneNavigator.MAIN));
+
+        MainController mainController = loader.getController();
+
+        SceneNavigator.setMainController(mainController);
+        SceneNavigator.loadScene(SceneNavigator.WELCOME);
+
+        return mainPane;
+    }
+
+    /**
+     * Creates the main application scene.
+     *
+     * @param mainPane the main application layout.
+     *
+     * @return the created scene.
+     */
+    private Scene createScene(Pane mainPane) {
+        Scene scene = new Scene(mainPane);
+
+        scene.getStylesheets().setAll(getClass().getResource("../resources/styles/styles.css").toExternalForm());
+
+        return scene;
+    }
 
 
     public static void main(String[] args) {

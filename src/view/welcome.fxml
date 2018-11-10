@@ -24,7 +24,7 @@
     <Text text="Welcome!" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.columnSpan="3" />
     <ImageView fitHeight="150.0" fitWidth="200.0" preserveRatio="true">
             <image>
-                <Image url="@../images/icons/logo.png"  />
+                <Image url="@../resources/images/icons/logo.png"  />
             </image>
     </ImageView>
     <GridPane GridPane.rowIndex="1" GridPane.columnIndex="0">

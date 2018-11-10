@@ -9,11 +9,8 @@ import javafx.stage.Stage;
 
 public class MainController {
 
-    public MainController(Stage stage) {
-        mainStage = stage;
-    }
-
-    private Stage mainStage;
+    @FXML
+    private StackPane paneHolder;
 
     /**
      * Replaces the vista displayed in the vista holder with a new vista.
@@ -21,7 +18,7 @@ public class MainController {
      * @param node the vista node to be swapped in.
      */
     public void setScene(Pane node) {
-        mainStage.setScene(new Scene(node));
+        paneHolder.getChildren().setAll(node);
         //scene.getStylesheets().setAll(getClass().getResource("style.css").toExternalForm());
     }
 }

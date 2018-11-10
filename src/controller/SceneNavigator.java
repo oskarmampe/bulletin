@@ -6,7 +6,8 @@ import java.io.IOException;
 
 public class SceneNavigator {
 
-    public static final String MAIN    = "../view/welcome.fxml";
+    public static final String MAIN = "../view/main.fxml";
+    public static final String WELCOME = "../view/welcome.fxml";
     public static final String SEND = "../view/send.fxml";
     public static final String TOPICS = "../view/topics.fxml";
 
