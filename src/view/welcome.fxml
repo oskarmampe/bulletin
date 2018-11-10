@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Text?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="controller.WelcomeController"
+          alignment="CENTER"
+          prefHeight="600"
+          prefWidth="800"
+          vgap="100">
+
+    <padding>
+        <Insets top="25" right="25" bottom="400" left="25"/>
+    </padding>
+    <Text text="Welcome!" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.columnSpan="3" />
+    <ImageView fitHeight="150.0" fitWidth="200.0" preserveRatio="true">
+            <image>
+                <Image url="@../images/icons/logo.png"  />
+            </image>
+    </ImageView>
+    <GridPane GridPane.rowIndex="1" GridPane.columnIndex="0">
+        <TextField fx:id="username" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+        <PasswordField fx:id="password" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+        <Button text="Send" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#login"/>
+    </GridPane>
+
+
+</GridPane>
