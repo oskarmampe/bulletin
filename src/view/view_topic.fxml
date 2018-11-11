@@ -6,9 +6,17 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
+<GridPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="controller.ViewTopicController"
             prefHeight="400.0" prefWidth="600.0">
 
-</AnchorPane>
+    <Label fx:id="topicTitle" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+
+    <ListView fx:id="postList" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    <ListView fx:id="chat" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+
+    <Button fx:id="addPost" GridPane.columnIndex="1" GridPane.rowIndex="2"  text="Add Post" onAction="#addPost"/>
+
+    <Button GridPane.columnIndex="0" GridPane.rowIndex="2"  text="See All Topics" onAction="#readTopics"/>
+</GridPane>

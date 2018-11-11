@@ -12,6 +12,7 @@ public class SceneNavigator {
     public static final String CREATE_TOPIC = "../view/create_topic.fxml";
     public static final String READ_ALL_TOPICS = "../view/read_topics.fxml";
     public static final String VIEW_TOPIC = "../view/view_topic.fxml";
+    public static final String CREATE_POST = "../view/create_post.fxml";
 
     private static MainController mainController;
 

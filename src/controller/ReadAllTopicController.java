@@ -22,6 +22,7 @@ public class ReadAllTopicController {
     ListView listView;
 
     ObservableList<String> items;
+    ArrayList<OMTopic> topics = new ArrayList<>();
 
     @FXML
     public void initialize() {
@@ -46,6 +47,7 @@ public class ReadAllTopicController {
             } else {
                 OMTopic topic = (OMTopic) get.next();
                 while (topic != null) {
+                    topics.add(topic);
                     items.add(topic.title);
                     topic = (OMTopic) get.next();
                 }
@@ -68,22 +70,21 @@ public class ReadAllTopicController {
     }
 
     public void viewTopic(String value){
-        OMTopic template = new OMTopic();
-        template.title = value;
-        try {
-            OMTopic topic = (OMTopic) App.mSpace.read(template, null, 1000*5);
-            HashMap<String, OMTopic> topicHashMap = new HashMap<>();
-            topicHashMap.put("topic", topic);
-            SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
-        } catch (UnusableEntryException e) {
-            e.printStackTrace();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        OMTopic template = null;
+
+        for (OMTopic topic : topics) {
+            if(topic.title.equals(value)) {
+                template = topic;
+                break;
+            }
         }
+        HashMap<String, OMTopic> topicHashMap = new HashMap<>();
+        topicHashMap.put("topic", template);
+        SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
+
+    }
+
+    public void sendMessage(){
 
     }
 

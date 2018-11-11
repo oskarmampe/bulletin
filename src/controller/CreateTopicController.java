@@ -15,7 +15,7 @@ public class CreateTopicController {
     int count = 0;
 
     public void createTopic() {
-        OMTopic obj = new OMTopic("a", count, App.user.userid, objTextField.getText());
+        OMTopic obj = new OMTopic(App.user.userid+count+objTextField.getText(), count, App.user.userid, objTextField.getText());
         count++;
         try {
             App.mSpace.write(obj, null, 1000 * 60);
