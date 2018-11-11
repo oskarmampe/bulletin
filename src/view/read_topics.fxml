@@ -15,6 +15,6 @@
     <Text text="Received Object: " GridPane.rowIndex="0" GridPane.columnIndex="0"  />
     <ListView fx:id="listView" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-    <Button text="Change Scene" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#changeScene"/>
+    <Button text="Create Topic" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#createTopic"/>
 
 </GridPane>

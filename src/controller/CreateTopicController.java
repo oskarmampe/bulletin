@@ -27,6 +27,6 @@ public class CreateTopicController {
     }
 
     public void changeScene(){
-        SceneNavigator.loadScene(SceneNavigator.TOPICS);
+        SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
     }
 }

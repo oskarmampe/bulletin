@@ -53,7 +53,7 @@ public class WelcomeController {
                 App.user = user;
             }
 
-            SceneNavigator.loadScene(SceneNavigator.SEND);
+            SceneNavigator.loadScene(SceneNavigator.CREATE_TOPIC);
 
 
         } catch (UnusableEntryException e) {
