@@ -16,8 +16,4 @@
     <ListView fx:id="listView" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
     <Button text="Create Topic" GridPane.rowIndex="3" GridPane.columnIndex="2" GridPane.halignment="LEFT" onAction="#createTopic"/>
-
-    <Button text="Send Message" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="LEFT" onAction="#sendMessage"/>
-    <TextField GridPane.rowIndex="3" GridPane.columnIndex="0" />
-
 </GridPane>

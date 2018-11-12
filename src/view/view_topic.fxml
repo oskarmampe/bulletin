@@ -16,7 +16,12 @@
     <ListView fx:id="postList" GridPane.columnIndex="1" GridPane.rowIndex="1" />
     <ListView fx:id="chat" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
 
-    <Button fx:id="addPost" GridPane.columnIndex="1" GridPane.rowIndex="2"  text="Add Post" onAction="#addPost"/>
+    <Button text="Send Message" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="LEFT" onAction="#sendMessage"/>
+    <Button text="Send Private Message" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="LEFT" onAction="#sendPrivateMessage"/>
+    <TextField fx:id="sendMessage" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.halignment="RIGHT" />
 
-    <Button GridPane.columnIndex="0" GridPane.rowIndex="2"  text="See All Topics" onAction="#readTopics"/>
+
+    <Button fx:id="addPost" GridPane.columnIndex="1" GridPane.rowIndex="2"  GridPane.halignment="CENTER" text="Add Post" onAction="#addPost"/>
+
+    <Button GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.halignment="RIGHT"  text="See All Topics" onAction="#readTopics"/>
 </GridPane>

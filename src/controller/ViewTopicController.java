@@ -1,15 +1,25 @@
 package controller;
 
 import application.App;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import model.OMComment;
 import model.OMPost;
 import model.OMTopic;
 import net.jini.core.entry.UnusableEntryException;
+import net.jini.core.event.RemoteEvent;
+import net.jini.core.event.RemoteEventListener;
+import net.jini.core.lease.Lease;
 import net.jini.core.transaction.TransactionException;
+import net.jini.export.Exporter;
+import net.jini.jeri.BasicILFactory;
+import net.jini.jeri.BasicJeriExporter;
+import net.jini.jeri.tcp.TcpServerEndpoint;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
 
@@ -18,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-public class ViewTopicController implements ParametrizedController<String, OMTopic> {
+public class ViewTopicController implements ParametrizedController<String, OMTopic>, RemoteEventListener {
 
 
     HashMap<String, OMTopic> mMap;
@@ -29,24 +39,36 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     @FXML
     ListView postList;
 
+    @FXML
+    TextField sendMessage;
+
+    @FXML
+    ListView chat;
+
     ArrayList<OMPost> posts = new ArrayList<>();
 
-    ObservableList<String> items;
+    private RemoteEventListener theStub;
+
+    ObservableList<String> postItems;
+    ObservableList<String> messageItems;
 
     @FXML
     public void initialize(){
-        items = FXCollections.observableArrayList();
+        postItems = FXCollections.observableArrayList();
 
         postList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
         });
 
-        postList.setItems(items);
+        messageItems = FXCollections.observableArrayList();
+        chat.setItems(messageItems);
+
+        postList.setItems(postItems);
     }
 
     @Override
     public void setParamters(HashMap<String, OMTopic> map) {
-        items.clear();
+        postItems.clear();
         mMap = map;
         OMTopic topic = map.get("topic");
         topicTitle.setText(topic.title);
@@ -55,14 +77,15 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
             OMPost template = new OMPost();
             template.topicId = topic.id;
 
-            MatchSet get = ((JavaSpace05) App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)), null, 1000 * 5, Long.MAX_VALUE);
+            MatchSet get = ((JavaSpace05) App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
+                    null, 1000 * 5, Long.MAX_VALUE);
             if (get == null) {
 
             } else {
                 OMPost post = (OMPost) get.next();
                 while (post != null) {
                     posts.add(post);
-                    items.add(post.title);
+                    postItems.add(post.title);
                     post = (OMPost) get.next();
                 }
 
@@ -75,6 +98,9 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         } catch (TransactionException e) {
             e.printStackTrace();
         }
+
+        listenForMessages();
+        getAllComments();
     }
 
     public void addPost(){
@@ -84,4 +110,87 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     public void readTopics() {
         SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
     }
+
+    public void sendMessage(){
+        try{
+            OMComment comment = new OMComment(sendMessage.getText(), false, 0, App.user.userid, mMap.get("topic").id);
+            App.mSpace.write(comment, null, 1000 * 60 * 5);
+        } catch (TransactionException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPrivateMessage(){
+        try{
+            OMComment comment = new OMComment(sendMessage.getText(), true, 0, App.user.userid, mMap.get("topic").id);
+            App.mSpace.write(comment, null, 1000 * 60 * 5);
+        } catch (TransactionException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void listenForMessages(){
+        // create the exporter
+        Exporter myDefaultExporter =
+                new BasicJeriExporter(TcpServerEndpoint.getInstance(0),
+                        new BasicILFactory(), false, true);
+
+        try {
+            // register this as a remote object
+            // and get a reference to the 'stu'
+            theStub = (RemoteEventListener) myDefaultExporter.export(this);
+
+            // add the listener
+            OMComment template = new OMComment();
+            App.mSpace.notify(template, null, this.theStub, Lease.FOREVER, null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void notify(RemoteEvent ev) {
+        Platform.runLater(this::getAllComments);
+    }
+
+    public void getAllComments(){
+        // this is the method called when we are notified
+        // of an object of interest
+        OMComment template = new OMComment();
+        template.privateMessage = false;
+
+        try {
+            MatchSet result = ((JavaSpace05)App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
+                    null, 1000*2, Long.MAX_VALUE);
+            if (result == null) {
+
+            } else {
+                ArrayList<String> messages = new ArrayList<>();
+                OMComment comment = (OMComment) result.next();
+                while (comment != null) {
+                    messages.add(comment.content);
+                    comment = (OMComment) result.next();
+                }
+               chat.getItems().setAll(messages);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void getPrivateComments(){
+        OMComment template = new OMComment();
+        template.privateMessage = true;
+        template.topicId = mMap.get("topic").id;
+        if(!mMap.get("topic").owner.equals(App.user.userid)) {
+            template.owner = App.user.userid;
+        }
+    }
+
 }

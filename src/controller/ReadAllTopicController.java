@@ -84,8 +84,6 @@ public class ReadAllTopicController {
 
     }
 
-    public void sendMessage(){
 
-    }
 
 }
