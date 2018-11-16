@@ -5,12 +5,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import model.OMComment;
+import model.OMPost;
 import model.OMTopic;
 import net.jini.core.entry.UnusableEntryException;
 import net.jini.core.transaction.TransactionException;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
 
+import javax.xml.soap.Text;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +24,9 @@ public class ReadAllTopicController {
 
     @FXML
     ListView listView;
+
+    @FXML
+    TextField deleteTopicField;
 
     ObservableList<String> items;
     ArrayList<OMTopic> topics = new ArrayList<>();
@@ -81,6 +88,36 @@ public class ReadAllTopicController {
         HashMap<String, OMTopic> topicHashMap = new HashMap<>();
         topicHashMap.put("topic", template);
         SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
+
+    }
+
+    public void deleteTopic(){
+        String title = (String) deleteTopicField.getText();
+        OMTopic topicTemplate = null;
+        for(OMTopic topic : topics) {
+            if(topic.title.equals(title) && topic.owner.equals(App.user.userid)) {
+                topicTemplate = topic;
+            }
+        }
+
+        try{
+            OMComment commentTemplate = new OMComment();
+            commentTemplate.topicId = topicTemplate.id;
+
+            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(commentTemplate)), null, 1000*60, Long.MAX_VALUE);
+
+            OMPost postTemplate = new OMPost();
+            postTemplate.topicId = topicTemplate.id;
+
+            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(postTemplate)), null, 1000*60, Long.MAX_VALUE);
+
+            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(topicTemplate)), null, 1000*60, Long.MAX_VALUE);
+
+
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

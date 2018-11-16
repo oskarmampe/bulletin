@@ -11,17 +11,17 @@
             fx:controller="controller.ViewTopicController"
             prefHeight="400.0" prefWidth="600.0">
 
-    <Label fx:id="topicTitle" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+    <Label fx:id="topicTitle" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
 
-    <ListView fx:id="postList" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    <ListView fx:id="postList" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
     <ListView fx:id="chat" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
 
     <Button text="Send Message" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="LEFT" onAction="#sendMessage"/>
-    <Button text="Send Private Message" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="LEFT" onAction="#sendPrivateMessage"/>
-    <TextField fx:id="sendMessage" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.halignment="RIGHT" />
+    <Button text="Send Private Message" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#sendPrivateMessage"/>
+    <TextField fx:id="sendMessage" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.halignment="LEFT"/>
 
 
-    <Button fx:id="addPost" GridPane.columnIndex="1" GridPane.rowIndex="2"  GridPane.halignment="CENTER" text="Add Post" onAction="#addPost"/>
+    <Button fx:id="addPost" GridPane.rowIndex="2"  GridPane.columnIndex="2" GridPane.halignment="LEFT" text="Add Post" onAction="#addPost"/>
 
-    <Button GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.halignment="RIGHT"  text="See All Topics" onAction="#readTopics"/>
+    <Button GridPane.rowIndex="2" GridPane.columnIndex="2" GridPane.halignment="RIGHT"  text="See All Topics" onAction="#readTopics"/>
 </GridPane>

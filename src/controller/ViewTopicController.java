@@ -30,9 +30,6 @@ import java.util.HashMap;
 
 public class ViewTopicController implements ParametrizedController<String, OMTopic>, RemoteEventListener {
 
-
-    HashMap<String, OMTopic> mMap;
-
     @FXML
     Label topicTitle;
 
@@ -45,24 +42,20 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     @FXML
     ListView chat;
 
-    ArrayList<OMPost> posts = new ArrayList<>();
-
+    private ArrayList<OMPost> posts = new ArrayList<>();
     private RemoteEventListener theStub;
-
-    ObservableList<String> postItems;
-    ObservableList<String> messageItems;
+    private ObservableList<String> postItems;
+    private ObservableList<String> messageItems;
+    private HashMap<String, OMTopic> mMap;
 
     @FXML
     public void initialize(){
         postItems = FXCollections.observableArrayList();
-
         postList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
         });
-
         messageItems = FXCollections.observableArrayList();
         chat.setItems(messageItems);
-
         postList.setItems(postItems);
     }
 
@@ -79,28 +72,23 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
             MatchSet get = ((JavaSpace05) App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
                     null, 1000 * 5, Long.MAX_VALUE);
-            if (get == null) {
-
-            } else {
+            if (get != null) {
                 OMPost post = (OMPost) get.next();
                 while (post != null) {
                     posts.add(post);
                     postItems.add(post.title);
                     post = (OMPost) get.next();
                 }
-
             }
 
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (UnusableEntryException e) {
-            e.printStackTrace();
-        } catch (TransactionException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         listenForMessages();
+        chat.getItems().clear();
         getAllComments();
+        getPrivateComments();
     }
 
     public void addPost(){
@@ -115,9 +103,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         try{
             OMComment comment = new OMComment(sendMessage.getText(), false, 0, App.user.userid, mMap.get("topic").id);
             App.mSpace.write(comment, null, 1000 * 60 * 5);
-        } catch (TransactionException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -126,14 +112,12 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         try{
             OMComment comment = new OMComment(sendMessage.getText(), true, 0, App.user.userid, mMap.get("topic").id);
             App.mSpace.write(comment, null, 1000 * 60 * 5);
-        } catch (TransactionException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void listenForMessages(){
+    private void listenForMessages(){
         // create the exporter
         Exporter myDefaultExporter =
                 new BasicJeriExporter(TcpServerEndpoint.getInstance(0),
@@ -154,14 +138,19 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     }
 
     public void notify(RemoteEvent ev) {
-        Platform.runLater(this::getAllComments);
+        Platform.runLater(() -> {
+            chat.getItems().clear();
+            getAllComments();
+            getPrivateComments();
+        });
     }
 
-    public void getAllComments(){
+    private void getAllComments(){
         // this is the method called when we are notified
         // of an object of interest
         OMComment template = new OMComment();
         template.privateMessage = false;
+        template.topicId = mMap.get("topic").id;
 
         try {
             MatchSet result = ((JavaSpace05)App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
@@ -175,7 +164,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                     messages.add(comment.content);
                     comment = (OMComment) result.next();
                 }
-               chat.getItems().setAll(messages);
+               chat.getItems().addAll(messages);
 
             }
         } catch (Exception e) {
@@ -184,12 +173,31 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
     }
 
-    public void getPrivateComments(){
+    private void getPrivateComments(){
         OMComment template = new OMComment();
         template.privateMessage = true;
         template.topicId = mMap.get("topic").id;
         if(!mMap.get("topic").owner.equals(App.user.userid)) {
             template.owner = App.user.userid;
+        }
+
+        try {
+            MatchSet result = ((JavaSpace05)App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
+                    null, 1000*2, Long.MAX_VALUE);
+            if (result == null) {
+
+            } else {
+                ArrayList<String> messages = new ArrayList<>();
+                OMComment comment = (OMComment) result.next();
+                while (comment != null) {
+                    messages.add(comment.content);
+                    comment = (OMComment) result.next();
+                }
+                chat.getItems().addAll(messages);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

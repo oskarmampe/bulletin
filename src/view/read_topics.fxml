@@ -14,6 +14,7 @@
 
     <Text text="Received Object: " GridPane.rowIndex="0" GridPane.columnIndex="0"  />
     <ListView fx:id="listView" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
+    <TextField fx:id="deleteTopicField" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+    <Button text="Delete Topic" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.halignment="LEFT" onAction="#deleteTopic"/>
     <Button text="Create Topic" GridPane.rowIndex="3" GridPane.columnIndex="2" GridPane.halignment="LEFT" onAction="#createTopic"/>
 </GridPane>
