@@ -10,7 +10,7 @@ import model.OMComment;
 import model.OMPost;
 import model.OMTopic;
 import net.jini.core.entry.UnusableEntryException;
-import net.jini.core.transaction.TransactionException;
+import net.jini.core.transaction.*;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
 
@@ -94,6 +94,16 @@ public class ReadAllTopicController {
     public void deleteTopic(){
         String title = (String) deleteTopicField.getText();
         OMTopic topicTemplate = null;
+
+        Transaction.Created trc = null;
+        try {
+            trc = TransactionFactory.create(App.mTransactionManager, 1000*5);
+        } catch (Exception e) {
+            System.out.println("Could not create transaction " + e);;
+        }
+
+        Transaction txn = trc.transaction;
+
         for(OMTopic topic : topics) {
             if(topic.title.equals(title) && topic.owner.equals(App.user.userid)) {
                 topicTemplate = topic;
@@ -104,19 +114,25 @@ public class ReadAllTopicController {
             OMComment commentTemplate = new OMComment();
             commentTemplate.topicId = topicTemplate.id;
 
-            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(commentTemplate)), null, 1000*60, Long.MAX_VALUE);
+            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(commentTemplate)), txn, 1000, Long.MAX_VALUE);
 
             OMPost postTemplate = new OMPost();
             postTemplate.topicId = topicTemplate.id;
 
-            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(postTemplate)), null, 1000*60, Long.MAX_VALUE);
+            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(postTemplate)), txn, 1000, Long.MAX_VALUE);
 
-            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(topicTemplate)), null, 1000*60, Long.MAX_VALUE);
+            ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(topicTemplate)), txn, 1000, Long.MAX_VALUE);
 
 
+            txn.commit();
 
         } catch (Exception e){
             e.printStackTrace();
+            try {
+                txn.abort();
+            } catch (UnknownTransactionException | CannotAbortException | RemoteException e1) {
+                e1.printStackTrace();
+            }
         }
 
     }
