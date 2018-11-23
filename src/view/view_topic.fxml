@@ -22,11 +22,11 @@
       <children>
           <TextField fx:id="sendMessage" />
       
-          <Button layoutX="144.0" layoutY="3.0" onAction="#sendMessage" style="-fx-background-color: #FFFFFF;" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="2.0">
+          <Button layoutX="144.0" layoutY="3.0" onAction="#sendButton" style="-fx-background-color: #FFFFFF;" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="2.0">
             <graphic>
                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                   <image>
-                     <Image url="@../resources/images/icons/send.png" />
+                     <Image url="@/resources/images/icons/send.png" />
                   </image>
                </ImageView>
             </graphic>
@@ -38,7 +38,7 @@
     <Button fx:id="addPost" onAction="#addPost" text="Add Post" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
 
     <Button onAction="#readTopics" text="See All Topics" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
-   <ComboBox prefHeight="27.0" prefWidth="167.0" GridPane.rowIndex="3" />
+   <ComboBox fx:id="privateCMB" prefHeight="27.0" prefWidth="167.0" GridPane.rowIndex="3" />
    <columnConstraints>
       <ColumnConstraints maxWidth="242.5" minWidth="128.5" percentWidth="29.0" prefWidth="230.5" />
       <ColumnConstraints maxWidth="366.5" minWidth="247.5" percentWidth="75.0" prefWidth="264.5" />

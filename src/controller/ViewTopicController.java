@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -23,6 +24,7 @@ import net.jini.jeri.tcp.TcpServerEndpoint;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
 
+import java.awt.event.KeyEvent;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +44,9 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     @FXML
     ListView chat;
 
+    @FXML
+    ComboBox privateCMB;
+
     private ArrayList<OMPost> posts = new ArrayList<>();
     private RemoteEventListener theStub;
     private ObservableList<String> postItems;
@@ -54,6 +59,17 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         postList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
         });
+
+        sendMessage.setOnKeyPressed((event) -> {
+            if(event.getCode().impl_getCode() == KeyEvent.VK_ENTER) {
+                sendButton();
+            }
+        });
+
+        privateCMB.getItems().setAll("Public", "Private");
+
+        privateCMB.getSelectionModel().select(0);
+
         messageItems = FXCollections.observableArrayList();
         chat.setItems(messageItems);
         postList.setItems(postItems);
@@ -99,7 +115,16 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
     }
 
-    public void sendMessage(){
+    public void sendButton(){
+        if(privateCMB.getSelectionModel().isSelected(0)) {
+            sendMessage();
+        } else {
+            sendPrivateMessage();
+        }
+
+    }
+
+    public void sendMessage() {
         try{
             OMComment comment = new OMComment(sendMessage.getText(), false, 0, App.user.userid, mMap.get("topic").id);
             App.mSpace.write(comment, null, 1000 * 60 * 5);
