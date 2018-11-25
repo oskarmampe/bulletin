@@ -2,6 +2,7 @@ package controller;
 
 import application.App;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import model.OMUser;
@@ -67,5 +68,9 @@ public class WelcomeController {
         }
 
 
+    }
+
+    public void navigateCreateUser(){
+        SceneNavigator.loadScene(SceneNavigator.CREATE_USER);
     }
 }

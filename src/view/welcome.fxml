@@ -26,6 +26,7 @@
         <TextField fx:id="username" GridPane.columnIndex="1" GridPane.rowIndex="1" />
         <PasswordField fx:id="password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
         <Button onAction="#login" style="-fx-background-color: #5cbcf6#5cbcf6;" text="Send" textFill="WHITE" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+        <Button onAction="#navigateCreateUser" style="-fx-background-color: #5cbcf6#5cbcf6;" text="Create User" textFill="WHITE" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
       <columnConstraints>
          <ColumnConstraints />
          <ColumnConstraints />
