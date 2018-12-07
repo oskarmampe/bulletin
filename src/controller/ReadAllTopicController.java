@@ -119,6 +119,13 @@ public class ReadAllTopicController implements RemoteEventListener{
 
                             final Button btn = new Button();
 
+                            public void viewTopic(OMTopic value){
+                                HashMap<String, OMTopic> topicHashMap = new HashMap<>();
+                                topicHashMap.put("topic", value);
+                                SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
+
+                            }
+
                             @Override
                             public void updateItem(String item, boolean empty) {
                                 super.updateItem(item, empty);
@@ -127,7 +134,7 @@ public class ReadAllTopicController implements RemoteEventListener{
                                     setText(null);
                                 } else {
                                     btn.setOnAction(event -> {
-                                        System.out.println( getTableView().getItems().get(getIndex()).owner );
+                                        viewTopic( getTableView().getItems().get(getIndex()) );
                                     });
                                     ImageView imageView = new ImageView(new Image("resources/images/icons/view.png"));
                                     imageView.setFitHeight(18);
@@ -355,22 +362,6 @@ public class ReadAllTopicController implements RemoteEventListener{
     public void createTopic(){
         SceneNavigator.loadScene(SceneNavigator.CREATE_TOPIC);
     }
-
-    public void viewTopic(String value){
-        OMTopic template = null;
-
-        for (OMTopic topic : topics) {
-            if(topic.title.equals(value)) {
-                template = topic;
-                break;
-            }
-        }
-        HashMap<String, OMTopic> topicHashMap = new HashMap<>();
-        topicHashMap.put("topic", template);
-        SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
-
-    }
-
 
     private void listenForMessages(){
         // create the exporter

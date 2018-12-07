@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
+<?import javafx.scene.control.Button?>
 <GridPane stylesheets="@/resources/styles/table.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ReadAllTopicController">
    <columnConstraints>
       <ColumnConstraints />
@@ -31,7 +32,7 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy></TableView>
       <Label fx:id="userLabel" text="Welcome, USERID" GridPane.columnIndex="2" />
-      <ImageView fx:id="userIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" />
+      <ImageView fx:id="userIcon" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" />
       <Label text="Notifications" GridPane.columnIndex="5" />
       <Separator prefWidth="200.0" visible="false" GridPane.columnIndex="3" />
       <Separator prefWidth="200.0" visible="false" GridPane.columnIndex="4" />

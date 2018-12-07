@@ -47,11 +47,10 @@ public class WelcomeController {
         try {
             OMUser user = (OMUser) App.mSpace.read(template, null, 1000*2);
 
-            if(user == null) {
-                App.mSpace.write(template, null, 1000*60*5);
-                App.user = template;
-            } else {
+            if(user != null) {
                 App.user = user;
+            } else {
+                return;
             }
 
             SceneNavigator.loadScene(SceneNavigator.CREATE_TOPIC);
