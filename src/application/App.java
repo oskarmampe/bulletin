@@ -15,11 +15,23 @@ import net.jini.space.JavaSpace;
 
 import java.io.IOException;
 
+
+/**
+ *
+ * Main Application Class. Used in JavaFX as entry point. Contains basic methods for loading and creatin scenes.
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ * @see Application
+ */
 public class App extends Application {
 
+    //Javaspace entries. Set as static so they're loaded once, releasing pressure on network traffic.
     public static JavaSpace mSpace;
     public static TransactionManager mTransactionManager;
-    public static OMUser user;
+
+    //Logged in User.
+    public static OMUser mUser;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -35,23 +47,23 @@ public class App extends Application {
         });
 
         primaryStage.show();
+        SceneNavigator.mPrimaryStage = primaryStage;
     }
 
     /**
      * Loads the main fxml layout.
-     * Sets up the vista switching VistaNavigator.
-     * Loads the first vista into the fxml layout.
      *
      * @return the loaded pane.
      * @throws IOException if the pane could not be loaded.
      */
     private Pane loadMainPane() throws IOException {
         FXMLLoader loader = new FXMLLoader();
+        Pane mainPane = loader.load(getClass().getResourceAsStream(SceneNavigator.MAIN));
 
-        Pane mainPane = (Pane) loader.load(getClass().getResourceAsStream(SceneNavigator.MAIN));
-
+        //Main controller is the controller for the main fxml.
         MainController mainController = loader.getController();
 
+        //Scenenavigator is a singleton responsible for scene switching. It needs the main controller to load the main fxml properly.
         SceneNavigator.setMainController(mainController);
         SceneNavigator.loadScene(SceneNavigator.WELCOME);
 
@@ -74,6 +86,14 @@ public class App extends Application {
     }
 
 
+    /**
+     *
+     * Main method. Creates a {@link JavaSpace} and {@link TransactionManager} from {@link SpaceUtils}
+     * Also launches fxml using any external args
+     * @see Application
+     *
+     * @param args compiler arguments
+     */
     public static void main(String[] args) {
         mSpace = SpaceUtils.getSpace();
         if (mSpace == null){
@@ -85,6 +105,6 @@ public class App extends Application {
             System.err.println("Failed to find the transaction manager");
             System.exit(1);
         }
-        launch(args);
+        launch(args);//FXML call
     }
 }

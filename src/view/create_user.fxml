@@ -1,31 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Text?>
-<GridPane xmlns="http://javafx.com/javafx"
-          xmlns:fx="http://javafx.com/fxml"
-          fx:controller="controller.CreateUserController"
-          prefHeight="400.0" prefWidth="600.0">
 
-    <Text text="Username: " GridPane.rowIndex="0" GridPane.columnIndex="0"  />
-    <TextField fx:id="usernameTxt" GridPane.rowIndex="0" GridPane.columnIndex="1" />
-
-    <Text text="Password: " GridPane.rowIndex="1" GridPane.columnIndex="0"  />
-    <TextField fx:id="passwordTxt" GridPane.rowIndex="1" GridPane.columnIndex="1" />
-
-    <Text text="Email: " GridPane.rowIndex="2" GridPane.columnIndex="0"  />
-    <TextField fx:id="emailTxt" GridPane.rowIndex="2" GridPane.columnIndex="1" />
-
-    <ComboBox fx:id="imagesCmb" GridPane.rowIndex="3" GridPane.columnIndex="0"  />
-
-    <Button text="Create" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.halignment="RIGHT" onAction="#createUser"/>
-
-    <Button text="Login" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.halignment="RIGHT" onAction="#navigateWelcome"/>
-
-
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.CreateUserController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="259.0" minWidth="10.0" prefWidth="259.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="248.0" minWidth="10.0" prefWidth="71.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="303.0" minWidth="10.0" prefWidth="178.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="269.0" minWidth="10.0" prefWidth="258.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints maxHeight="381.0" minHeight="10.0" prefHeight="189.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="431.0" minHeight="10.0" prefHeight="74.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="329.0" minHeight="10.0" prefHeight="65.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="295.0" minHeight="10.0" prefHeight="57.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="295.0" minHeight="10.0" prefHeight="281.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <Text text="Username: " GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="" />
+      <TextField fx:id="usernameTxt" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+      <Text text="Password: " GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <PasswordField fx:id="passwordTxt" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+      <ComboBox fx:id="imagesCmb" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.valignment="BOTTOM">
+         <GridPane.margin>
+            <Insets />
+         </GridPane.margin>
+      </ComboBox>
+      <Button onAction="#createUser" style="-fx-background-color: green; -fx-text-fill: white;" text="Create" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+      <Button onAction="#navigateWelcome" style="-fx-background-color: red; -fx-text-fill: white;" text="Back" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+   </children>
 </GridPane>

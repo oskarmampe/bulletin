@@ -1,55 +1,51 @@
 package controller;
 
 import application.App;
+import callbacks.DeleteCallback;
+import callbacks.EditCallback;
+import callbacks.NotificationCallback;
+import callbacks.ViewCallback;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Background;
-import javafx.util.Callback;
-import model.OMComment;
-import model.OMPost;
-import model.OMTopic;
-import model.OMTopicCounter;
+import model.*;
+import net.jini.core.entry.Entry;
 import net.jini.core.entry.UnusableEntryException;
 import net.jini.core.event.RemoteEvent;
 import net.jini.core.event.RemoteEventListener;
-import net.jini.core.lease.Lease;
 import net.jini.core.transaction.*;
 import net.jini.export.Exporter;
 import net.jini.jeri.BasicILFactory;
 import net.jini.jeri.BasicJeriExporter;
 import net.jini.jeri.tcp.TcpServerEndpoint;
+import net.jini.space.AvailabilityEvent;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
-import renderer.TopicListCell;
-import renderer.UserComboCell;
 
-import javax.xml.soap.Text;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
-import java.lang.invoke.ConstantCallSite;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
+import java.rmi.MarshalledObject;
 import java.util.*;
 
+/**
+ *
+ * Read all topic controller. This is injected using JavaFX from view/read_topics.fxml
+ * Implements {@link net.jini.space.JavaSpace05#registerForAvailabilityEvent(Collection, Transaction, boolean,
+ * RemoteEventListener, long, MarshalledObject)} to wait for any new {@link OMNotification} or {@link OMTopic} to arrive.
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ * @see RemoteEventListener
+ */
 public class ReadAllTopicController implements RemoteEventListener{
 
+
+    //------- FXML Elements -------
     @FXML
     TableView<OMTopic> topicTable;
-
-    @FXML
-    TextField deleteTopicField;
 
     @FXML
     ImageView userIcon;
@@ -57,41 +53,102 @@ public class ReadAllTopicController implements RemoteEventListener{
     @FXML
     Label userLabel;
 
-    ObservableList<OMTopic> items;
-    ArrayList<OMTopic> topics = new ArrayList<>();
-    RemoteEventListener stub;
+    @FXML
+    MenuBar notificationsMenu;
+
+    @FXML
+    Button createTopicButton;
+
+    @FXML
+    Label addText;
+
+    //------- Lists for ListView -------
+    private ObservableList<String> mNotificationsValue;
+    private ObservableList<OMTopic> mTopics;
 
     @FXML
     public void initialize() {
-        items = FXCollections.observableArrayList();
+        mTopics = FXCollections.observableArrayList();
 
         topicTable.getStyleClass().add("noheader");
 
-        userIcon.setImage(new Image(App.user.image));
+        createTopicButton.setGraphic(new ImageView(new Image("resources/images/icons/add.png")));
 
+        userIcon.setImage(new Image(App.mUser.image));
+        userLabel.setText("Welcome, " + App.mUser.userid);
+
+        initializeMenu();
         listenForMessages();
-        /*
-                <columns>
-          <TableColumn maxWidth="1.7976931348623157E308" minWidth="504.0" prefWidth="504.0" text="Text" />
-          <TableColumn maxWidth="24.0" minWidth="24.0" prefWidth="24.0" text="View/Hide" />
-            <TableColumn maxWidth="24.0" minWidth="24.0" prefWidth="24.0" text="Edit" />
-            <TableColumn maxWidth="24.0" minWidth="24.0" prefWidth="24.0" text="Delete" />
-            <TableColumn maxWidth="24.0" minWidth="24.0" prefWidth="24.0" text="Notifications" />
-        </columns>
-        */
+        initializeTable();
+        readAllTopics();
+    }
 
+    /**
+     *
+     * Initializes {@link ReadAllTopicController#notificationsMenu} with values from {@link JavaSpace05}
+     *
+     */
+    private void initializeMenu() {
+        mNotificationsValue = FXCollections.observableArrayList();
+
+        getNotifications();
+
+        ListView<String> listView = new ListView<>(mNotificationsValue);
+        listView.setPrefHeight(100);
+        CustomMenuItem listMenuItem = new CustomMenuItem(listView, false);
+
+        //Notifications are a menu item which contains a ListView inside. Any new notifications are added to the ListView.
+        Menu listMenu = new Menu("Notifications: " + listView.getItems().size());
+        listMenu.getItems().add(listMenuItem);
+        notificationsMenu.getMenus().addAll(listMenu);
+    }
+
+    /**
+     *
+     * Get all {@link OMNotification} for the user.
+     *
+     */
+    private void getNotifications() {
+        try { //Single operation so no transaction
+            OMNotification notificationTemplate = new OMNotification();
+            notificationTemplate.userId = App.mUser.userid;
+            MatchSet set = ((JavaSpace05)App.mSpace).contents(Collections.singletonList(notificationTemplate), null,
+                    1000*2, Long.MAX_VALUE);
+
+            if (set != null) {
+                OMNotification notification = (OMNotification) set.next();
+                while (notification != null){
+                    //mNotificationsValue being the items in ListView inside the notification menu item.
+                    addNotification(notification.comment.owner, notification.topicName, notification.comment.privateMessage);
+                    notification = (OMNotification) set.next();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *
+     * Initializes the {@link ReadAllTopicController#topicTable} which holds all the topics. It also holds the icons
+     * and each icon is stored in a separate column with its own renderer.
+     *
+     */
+    private void initializeTable() {
+
+        //------- All Columns -------
         TableColumn<OMTopic, String> textColumn = new TableColumn<>();
         TableColumn<OMTopic, String> viewColumn = new TableColumn<>();
         TableColumn<OMTopic, String> editColumn = new TableColumn<>();
         TableColumn<OMTopic, String> deleteColumn = new TableColumn<>();
         TableColumn<OMTopic, String> notificationColumn = new TableColumn<>();
 
+        //------- Editing Column Properties -------
         textColumn.setEditable(false);
         viewColumn.setEditable(false);
         editColumn.setEditable(false);
         deleteColumn.setEditable(false);
         notificationColumn.setEditable(false);
-
 
         textColumn.setResizable(false);
         viewColumn.setResizable(false);
@@ -105,262 +162,34 @@ public class ReadAllTopicController implements RemoteEventListener{
         deleteColumn.setPrefWidth(24);
         notificationColumn.setPrefWidth(24);
 
-
-
-//
-//        editColumn.setCellValueFactory(cellData -> new SimpleStringProperty("resources/images/icons/pencil-edit-button.png"));
-//        notificationColumn.setCellValueFactory(cellData -> new SimpleStringProperty("resources/images/icons/blind.png"));
-
-        Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> viewCellFactory =
-                new Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>>() {
-                    @Override
-                    public TableCell call(final TableColumn<OMTopic, String> param) {
-                        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
-
-                            final Button btn = new Button();
-
-                            public void viewTopic(OMTopic value){
-                                HashMap<String, OMTopic> topicHashMap = new HashMap<>();
-                                topicHashMap.put("topic", value);
-                                SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
-
-                            }
-
-                            @Override
-                            public void updateItem(String item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                    setText(null);
-                                } else {
-                                    btn.setOnAction(event -> {
-                                        viewTopic( getTableView().getItems().get(getIndex()) );
-                                    });
-                                    ImageView imageView = new ImageView(new Image("resources/images/icons/view.png"));
-                                    imageView.setFitHeight(18);
-                                    imageView.setFitWidth(18);
-                                    setMaxWidth(18);
-                                    setAlignment(Pos.CENTER);
-                                    btn.setGraphic(imageView);
-                                    setGraphic(btn);
-                                    btn.setBackground(Background.EMPTY);
-                                    setText(null);
-                                }
-                            }
-                        };
-                        return cell;
-                    }
-                };
-
-        Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> editCellFactory =
-                new Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>>() {
-                    @Override
-                    public TableCell call(final TableColumn<OMTopic, String> param) {
-                        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
-
-                            final Button btn = new Button();
-
-                            @Override
-                            public void updateItem(String item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                    setText(null);
-                                } else {
-                                    btn.setOnAction(event -> {
-                                        System.out.println( getTableView().getItems().get(getIndex()).owner );
-                                    });
-                                    ImageView imageView = new ImageView(new Image("resources/images/icons/edit.png"));
-                                    imageView.setFitHeight(18);
-                                    imageView.setFitWidth(18);
-                                    setMaxWidth(18);
-                                    setAlignment(Pos.CENTER);
-                                    btn.setGraphic(imageView);
-                                    setGraphic(btn);
-                                    btn.setBackground(Background.EMPTY);
-                                    setText(null);
-                                }
-                            }
-                        };
-                        return cell;
-                    }
-                };
-
-        Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> deleteCellFactory =
-                new Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>>() {
-                    @Override
-                    public TableCell call(final TableColumn<OMTopic, String> param) {
-                        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
-
-                            final Button btn = new Button();
-
-                            private void deleteTopic(OMTopic topicTemplate){
-                                if(!App.user.userid.equals(topicTemplate.owner)){
-                                    return;
-                                }
-
-                                Transaction.Created trc = null;
-                                try {
-                                    trc = TransactionFactory.create(App.mTransactionManager, 1000*5);
-                                } catch (Exception e) {
-                                    System.out.println("Could not create transaction " + e);;
-                                }
-
-                                Transaction txn = trc.transaction;
-
-
-                                try{
-                                    OMComment commentTemplate = new OMComment();
-                                    OMPost postTemplate = new OMPost();
-                                    OMTopicCounter counterTemplate = new OMTopicCounter();
-
-                                    commentTemplate.topicId = topicTemplate.id;
-
-                                    ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(commentTemplate)), txn, 1000, Long.MAX_VALUE);
-
-
-                                    postTemplate.topicId = topicTemplate.id;
-
-                                    ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(postTemplate)), txn, 1000, Long.MAX_VALUE);
-
-                                    ((JavaSpace05)App.mSpace).take(new ArrayList<>(Collections.singletonList(topicTemplate)), txn, 1000, Long.MAX_VALUE);
-
-                                    OMTopicCounter counter = (OMTopicCounter) App.mSpace.takeIfExists(counterTemplate, txn, 1000*4);
-
-                                    counter.numOfTopics -= 1;
-
-                                    App.mSpace.write(counter, txn, 1000*60*30);
-
-                                    txn.commit();
-
-                                } catch (Exception e){
-                                    e.printStackTrace();
-                                    try {
-                                        txn.abort();
-                                    } catch (UnknownTransactionException | CannotAbortException | RemoteException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-
-                            }
-
-                            @Override
-                            public void updateItem(String item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                    setText(null);
-                                } else {
-                                    System.out.println("In Table " + getTableView().getItems().get(getIndex()).owner + ", Logged In: " + App.user.userid);
-                                    if(getTableView().getItems().get(getIndex()).owner.equals(App.user.userid)) {
-                                        System.out.println("IN");
-                                        btn.setOnAction(event -> deleteTopic(getTableView().getItems().get(getIndex())));
-                                        ImageView imageView = new ImageView(new Image("resources/images/icons/rubbish-bin.png"));
-                                        imageView.setFitHeight(18);
-                                        imageView.setFitWidth(18);
-                                        setMaxWidth(18);
-                                        setAlignment(Pos.CENTER);
-                                        btn.setGraphic(imageView);
-                                        setGraphic(btn);
-                                        btn.setBackground(Background.EMPTY);
-                                        setText(null);
-                                    } else {
-                                        setGraphic(null);
-                                        setText(null);
-                                    }
-                                }
-                            }
-                        };
-                        return cell;
-                    }
-                };
-
-        Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> notificationCellFactory =
-                new Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>>() {
-                    @Override
-                    public TableCell call(final TableColumn<OMTopic, String> param) {
-                        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
-
-                            final Button btn = new Button();
-
-                            @Override
-                            public void updateItem(String item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty) {
-                                    setGraphic(null);
-                                    setText(null);
-                                } else {
-                                    btn.setOnAction(event -> {
-                                        System.out.println( getTableView().getItems().get(getIndex()).owner );
-                                    });
-                                    ImageView imageView = new ImageView(new Image("resources/images/icons/alarm.png"));
-                                    imageView.setFitHeight(18);
-                                    imageView.setFitWidth(18);
-                                    setMaxWidth(18);
-                                    setAlignment(Pos.CENTER);
-                                    btn.setGraphic(imageView);
-                                    setGraphic(btn);
-                                    btn.setBackground(Background.EMPTY);
-                                    setText(null);
-                                }
-                            }
-                        };
-                        return cell;
-                    }
-                };
-
-        viewColumn.setCellFactory(viewCellFactory);
-        editColumn.setCellFactory(editCellFactory);
-        deleteColumn.setCellFactory(deleteCellFactory);
-        notificationColumn.setCellFactory(notificationCellFactory);
+        viewColumn.setCellFactory(new ViewCallback());
+        editColumn.setCellFactory(new EditCallback());
+        deleteColumn.setCellFactory(new DeleteCallback());
+        notificationColumn.setCellFactory(new NotificationCallback());
 
         textColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().title));
-        items = topicTable.getItems();
-
+        mTopics = topicTable.getItems();
 
         topicTable.getColumns().addAll(textColumn, viewColumn, editColumn, deleteColumn, notificationColumn);
-
-//        listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-//            viewTopic((String)newValue);
-//        });
-//
-//        listView.setItems(items);
-//
-//        listView.setCellFactory(c -> new TopicListCell());
-
-        readAllPosts();
     }
 
 
-    public void readAllPosts() {
+    private void readAllTopics() {
         OMTopic template = new OMTopic();
         try {
-            MatchSet get = ((JavaSpace05)App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)), null, 1000 * 5, Long.MAX_VALUE);
-            if (get == null) {
-
-            } else {
-                OMTopic topic = (OMTopic) get.next();
+            MatchSet set = ((JavaSpace05)App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
+                    null, 1000 * 2, Long.MAX_VALUE);
+            if (set != null) {
+                OMTopic topic = (OMTopic) set.next();
                 while (topic != null) {
-                    topics.add(topic);
-                    items.add(topic);
-                    topic = (OMTopic) get.next();
+                    mTopics.add(topic);
+                    topic = (OMTopic) set.next();
                 }
 
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-        } catch (ClassCastException e) {
-            e.printStackTrace();
-        } catch (UnusableEntryException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-
-    public void createTopic(){
-        SceneNavigator.loadScene(SceneNavigator.CREATE_TOPIC);
     }
 
     private void listenForMessages(){
@@ -372,50 +201,100 @@ public class ReadAllTopicController implements RemoteEventListener{
         try {
             // register this as a remote object
             // and get a reference to the 'stu'
-            stub = (RemoteEventListener) myDefaultExporter.export(this);
+            RemoteEventListener stub = (RemoteEventListener) myDefaultExporter.export(this);
 
             // add the listener
             OMTopicCounter template = new OMTopicCounter();
-            App.mSpace.notify(template, null, stub, Lease.FOREVER, null);
+            OMNotification notification = new OMNotification();
+            OMTopic topicTemplate = new OMTopic();
+
+            notification.userId = App.mUser.userid;
+
+            ArrayList<Entry> templates = new ArrayList<>();
+
+            templates.add(template);
+            templates.add(notification);
+            templates.add(topicTemplate);
+
+            ((JavaSpace05)App.mSpace).registerForAvailabilityEvent(templates, null, false, stub,
+                    1000*60*30, null);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @Override
     public void notify(RemoteEvent ev) {
-        OMTopic template = new OMTopic();
-        Platform.runLater(() -> {
+        System.out.println("notified");
+        AvailabilityEvent event = (AvailabilityEvent) ev;
+
+            Entry entry = null;
 
             try {
-                MatchSet set = ((JavaSpace05)App.mSpace).contents(Collections.singletonList(template),null, 1000*4, Long.MAX_VALUE);
+                entry = event.getEntry();
+            } catch (UnusableEntryException e1) {
+                e1.printStackTrace();
+            }
 
-                if(set != null) {
-                    OMTopic topic = (OMTopic) set.next();
-                    ArrayList<OMTopic> topics = new ArrayList<>(items);
+            if (entry instanceof OMTopicCounter) {
 
-                    while (topic != null) {
-                        if(!items.contains(topic)) {
-                            items.add(topic);
-                        } else {
-                            topics.remove(topic);
+                OMTopic template = new OMTopic();
+                try {
+                    MatchSet set = ((JavaSpace05) App.mSpace).contents(Collections.singletonList(template),
+                            null, 1000 * 2, Long.MAX_VALUE);
+
+                    if (set != null) {
+                        OMTopic topic = (OMTopic) set.next();
+                        ArrayList<OMTopic> topics = new ArrayList<>(mTopics);
+
+                        while (topic != null) {
+                            if (!mTopics.contains(topic)) {
+                                mTopics.add(topic);
+                            } else {
+                                topics.remove(topic);
+                            }
+
+                            topic = (OMTopic) set.next();
                         }
 
-                        topic = (OMTopic) set.next();
+                        mTopics.removeAll(topics);
+
                     }
 
-                    items.removeAll(topics);
-
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-            } catch (TransactionException e) {
-                e.printStackTrace();
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            } catch (UnusableEntryException e) {
-                e.printStackTrace();
+
+            } else if (entry instanceof OMNotification) {
+                System.out.println("notification arrived");
+               addNotification(((OMNotification) entry).comment.owner, ((OMNotification) entry).topicName, ((OMNotification) entry).comment.privateMessage);
+            } else if (entry instanceof OMTopic) {
+                System.out.println("topic notifiyed");
+                for (OMTopic topic : mTopics) {
+                    System.out.println("topic nod");
+                    if(topic.index.intValue() == ((OMTopic) entry).index.intValue()
+                            && topic.id.equals(((OMTopic) entry).id) && topic.owner.equals(((OMTopic) entry).owner)){
+                        System.out.println("topic");
+                        topic.title = ((OMTopic) entry).title;
+                        topicTable.refresh();
+                    }
+                }
             }
+
+    }
+
+    public void createUser() {
+        SceneNavigator.showPopupWindow(SceneNavigator.CREATE_TOPIC_POPUP);
+    }
+
+    private void addNotification(String userId, String topicName, boolean type) {
+        Platform.runLater(() -> {
+            mNotificationsValue.add( "User " + userId + " has posted a " + (type ? "private" : "public") + " message in " + topicName );
+            notificationsMenu.getMenus().get(0).setText("Notifications: " + mNotificationsValue.size());
         });
+
     }
 
 

@@ -2,18 +2,14 @@ package controller;
 
 import application.App;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
+import javafx.scene.control.*;
 import model.OMUser;
-import net.jini.core.entry.UnusableEntryException;
-import net.jini.core.transaction.TransactionException;
+import net.jini.core.transaction.Transaction;
+import net.jini.core.transaction.TransactionFactory;
 import renderer.UserComboCell;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.swing.*;
-import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -29,7 +25,7 @@ public class CreateUserController {
     TextField usernameTxt;
 
     @FXML
-    TextField passwordTxt;
+    PasswordField passwordTxt;
 
 
     @FXML
@@ -54,38 +50,43 @@ public class CreateUserController {
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
-        KeySpec spec = new PBEKeySpec("password".toCharArray(), salt, 65536, 128);
+        KeySpec spec = new PBEKeySpec(passwordTxt.getText().toCharArray(), salt, 65536, 128);
         SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         byte[] hash = f.generateSecret(spec).getEncoded();
         Base64.Encoder enc = Base64.getEncoder();
-
-        OMUser template = new OMUser();
-        template.userid = usernameTxt.getText();
-        template.password = passwordTxt.getText();
-        template.image = (String) imagesCmb.getSelectionModel().getSelectedItem();
-
         try {
-            OMUser user = (OMUser) App.mSpace.read(template, null, 1000*2);
-
-            if(user == null) {
-                System.out.println("Creating user");
-                App.mSpace.write(template, null, 1000*60*5);
-                App.user = template;
-
-                SceneNavigator.loadScene(SceneNavigator.CREATE_TOPIC);
-            } else {
-                return;
+            OMUser template = new OMUser();
+            template.userid = usernameTxt.getText();
+            //------- TRANSACTION -------
+            Transaction.Created trc = null;
+            try {
+                trc = TransactionFactory.create(App.mTransactionManager, 3000);
+            } catch (Exception e) {
+                System.out.println("Could not create transaction " + e);
             }
 
+            //------- BEG OF TRANSACTION -------
+            Transaction txn = trc.transaction;
 
+            try {
+                OMUser user = (OMUser) App.mSpace.read(template, txn, 1000 * 2);
+                if (user == null) {
+                    template.password = enc.encodeToString(hash);
+                    template.salt = salt;
+                    template.image = (String) imagesCmb.getSelectionModel().getSelectedItem();
 
-        } catch (UnusableEntryException e) {
-            e.printStackTrace();
-        } catch (TransactionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
+                    App.mSpace.write(template, txn, 1000 * 60 * 30);
+                    App.mUser = template;
+                    SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
+                } else {
+                    SceneNavigator.showBasicPopupWindow("Username is taken. Please try again with a different username.");
+                }
+                txn.commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+                txn.abort();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

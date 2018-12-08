@@ -6,6 +6,7 @@ public class OMUser implements Entry {
     public String userid;
     public String password;
     public String image;
+    public byte[] salt;
 
     public OMUser() {
         //REQUIRED EMPTY CONSTRUCTOR
