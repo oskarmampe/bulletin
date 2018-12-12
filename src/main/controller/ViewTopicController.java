@@ -1,6 +1,6 @@
-package controller;
+package main.controller;
 
-import application.App;
+import main.application.App;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,7 +9,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import model.*;
+import main.model.*;
 import net.jini.core.event.RemoteEvent;
 import net.jini.core.event.RemoteEventListener;
 import net.jini.core.lease.Lease;
@@ -73,6 +73,9 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         getAllComments();
         getPrivateComments();
     }
+    public void setMap(HashMap<String, OMTopic> map) {
+        mMap = map;
+    }
 
     public void readTopics() {
         SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
@@ -80,14 +83,17 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
     public void sendButton(){
         if(privateCMB.getSelectionModel().isSelected(0)) {
-            sendMessage();
+            sendMessage(sendMessage.getText());
         } else {
-            sendPrivateMessage();
+            sendPrivateMessage(sendMessage.getText());
         }
         sendMessage.setText("");
     }
 
-    public void sendMessage() {
+    public void sendMessage(String message) {
+        if(message.trim().equals("") || message.isEmpty()){
+            return;
+        }
         //------- TRANSACTION -------
         Transaction.Created trc = null;
         try {
@@ -100,7 +106,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         Transaction txn = trc.transaction;
         try{
 
-            OMComment comment = new OMComment(sendMessage.getText(), false, 0, App.mUser.userid, mMap.get("topic").id);
+            OMComment comment = new OMComment(message, false, 0, App.mUser.userid, mMap.get("topic").id);
             App.mSpace.write(comment, txn, 1000 * 60 * 5);
 
             OMNotificationRegister registerTemplate = new OMNotificationRegister();
@@ -145,6 +151,8 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                 App.mLease.renew(1000*60*2);
                 //------- END OF TRANSACTION -------
                 txn.commit();
+            } catch (ExceptionInInitializerError | NoClassDefFoundError e1) {
+                e1.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
                 txn.abort();
@@ -155,7 +163,10 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         }
     }
 
-    public void sendPrivateMessage(){
+    public void sendPrivateMessage(String message){
+        if(message.trim().equals("") || message.isEmpty()){
+            return;
+        }
         //------- TRANSACTION -------
         Transaction.Created trc = null;
         try {
@@ -170,7 +181,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                 try {
                     OMTopic topic = (OMTopic) App.mSpace.read(mMap.get("topic"), txn, 1000);
                     if(topic != null) {
-                        OMComment comment = new OMComment(sendMessage.getText(), true, 0, App.mUser.userid, mMap.get("topic").id);
+                        OMComment comment = new OMComment(message, true, 0, App.mUser.userid, mMap.get("topic").id);
                         App.mSpace.write(comment, txn, 1000 * 60 * 30);
 
                         if (!App.mUser.userid.equals(mMap.get("topic").owner)) {
@@ -199,6 +210,8 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                     }
                     //------- END OF TRANSACTION -------
                     txn.commit();
+                } catch (ExceptionInInitializerError | NoClassDefFoundError e1) {
+                    e1.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                     txn.abort();
@@ -206,6 +219,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
         } catch (Exception e) {
             e.printStackTrace();
+
         }
     }
 

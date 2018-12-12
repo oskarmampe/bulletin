@@ -1,16 +1,16 @@
-package application;
+package main.application;
 
-import controller.MainController;
-import controller.SceneNavigator;
+import main.controller.MainController;
+import main.controller.SceneNavigator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import model.OMLoggedInUser;
-import model.OMUser;
-import model.SpaceUtils;
+import main.model.OMLoggedInUser;
+import main.model.OMUser;
+import main.model.SpaceUtils;
 import net.jini.core.lease.Lease;
 import net.jini.core.transaction.server.TransactionManager;
 import net.jini.space.JavaSpace;
@@ -43,7 +43,7 @@ public class App extends Application {
 
         primaryStage.setScene(createScene(loadMainPane()));
 
-        //Needed to close properly, without this, the application is still running in the background
+        //Needed to close properly, without this, the main.application is still running in the background
         primaryStage.setOnCloseRequest(t -> {
             if (App.mUser != null) {
                 try {
@@ -77,10 +77,10 @@ public class App extends Application {
         FXMLLoader loader = new FXMLLoader();
         Pane mainPane = loader.load(getClass().getResourceAsStream(SceneNavigator.MAIN));
 
-        //Main controller is the controller for the main fxml.
+        //Main main.controller is the main.controller for the main fxml.
         MainController mainController = loader.getController();
 
-        //SceneNavigator is a singleton responsible for scene switching. It needs the main controller to load the main fxml properly.
+        //SceneNavigator is a singleton responsible for scene switching. It needs the main main.controller to load the main fxml properly.
         SceneNavigator.setMainController(mainController);
         SceneNavigator.loadScene(SceneNavigator.WELCOME);
 
@@ -88,9 +88,9 @@ public class App extends Application {
     }
 
     /**
-     * Creates the main application scene.
+     * Creates the main main.application scene.
      *
-     * @param mainPane the main application layout.
+     * @param mainPane the main main.application layout.
      *
      * @return the created scene.
      */
@@ -124,4 +124,5 @@ public class App extends Application {
         }
         launch(args);//FXML call
     }
+
 }

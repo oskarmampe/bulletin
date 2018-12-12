@@ -1,18 +1,15 @@
-package controller;
+package main.controller;
 
-import application.App;
+import main.application.App;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
-import model.OMNotificationRegister;
-import model.OMTopic;
-import model.OMTopicCounter;
-import model.OMUser;
+import main.model.OMTopic;
+import main.model.OMTopicCounter;
 import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.TransactionFactory;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class PopupCreateTopicController {
@@ -20,7 +17,15 @@ public class PopupCreateTopicController {
     @FXML
     TextField topicNameTxt;
 
-    public void createTopic() {
+    public void onCreateTopicButtonClick() {
+        createTopic(topicNameTxt.getText());
+
+        SceneNavigator.closePopupWindow();
+    }
+
+    public void createTopic(String topicName) {
+        if(topicName.isEmpty() || topicName.trim().equals(""))
+            return;
 
         OMTopic template = new OMTopic();
         try {
@@ -45,7 +50,6 @@ public class PopupCreateTopicController {
                 if (counter == null) {
                     MatchSet set = ((JavaSpace05) App.mSpace).contents(Collections.singletonList(template), txn, 1000, Long.MAX_VALUE);
                     if (set != null) {
-                        count -= 1;
                         OMTopic topic = (OMTopic) set.next();
 
                         while (topic != null) {
@@ -56,8 +60,15 @@ public class PopupCreateTopicController {
                     counter = new OMTopicCounter(count);
                 }
 
-                OMTopic obj = new OMTopic(App.mUser.userid + counter.numOfTopics + topicNameTxt.getText(),
-                        counter.numOfTopics, App.mUser.userid, topicNameTxt.getText());
+                OMTopic topicTemplate = new OMTopic();
+                topicTemplate.title = topicName;
+
+                OMTopic foundTopic = (OMTopic) App.mSpace.read(topicTemplate, null, 1000*2);
+                if (foundTopic != null)
+                    txn.abort();
+
+                OMTopic obj = new OMTopic(App.mUser.userid + counter.numOfTopics + topicName,
+                        counter.numOfTopics, App.mUser.userid, topicName);
 
                 counter.numOfTopics += 1;
 
@@ -74,7 +85,5 @@ public class PopupCreateTopicController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        SceneNavigator.closePopupWindow();
     }
 }

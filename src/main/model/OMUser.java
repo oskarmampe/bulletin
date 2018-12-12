@@ -1,4 +1,4 @@
-package model;
+package main.model;
 
 import net.jini.core.entry.Entry;
 

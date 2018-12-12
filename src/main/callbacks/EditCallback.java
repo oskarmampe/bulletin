@@ -1,7 +1,7 @@
-package callbacks;
+package main.callbacks;
 
-import application.App;
-import controller.SceneNavigator;
+import main.application.App;
+import main.controller.SceneNavigator;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -10,7 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.util.Callback;
-import model.OMTopic;
+import main.model.OMTopic;
 
 import java.util.HashMap;
 
@@ -38,7 +38,7 @@ public class EditCallback implements Callback<TableColumn<OMTopic, String>, Tabl
                         btn.setOnAction(event -> {
                             editTopic(getTableView().getItems().get(getIndex()));
                         });
-                        ImageView imageView = new ImageView(new Image("resources/images/icons/edit.png"));
+                        ImageView imageView = new ImageView(new Image("main/resources/images/icons/edit.png"));
                         imageView.setFitHeight(18);
                         imageView.setFitWidth(18);
                         setMaxWidth(18);

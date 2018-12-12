@@ -1,10 +1,10 @@
-package controller;
+package main.controller;
 
-import application.App;
-import callbacks.DeleteCallback;
-import callbacks.EditCallback;
-import callbacks.NotificationCallback;
-import callbacks.ViewCallback;
+import main.application.App;
+import main.callbacks.DeleteCallback;
+import main.callbacks.EditCallback;
+import main.callbacks.NotificationCallback;
+import main.callbacks.ViewCallback;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -13,7 +13,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import model.*;
+import main.model.*;
 import net.jini.core.entry.Entry;
 import net.jini.core.entry.UnusableEntryException;
 import net.jini.core.event.RemoteEvent;
@@ -32,7 +32,7 @@ import java.util.*;
 
 /**
  *
- * Read all topic controller. This is injected using JavaFX from view/read_topics.fxml
+ * Read all topic main.controller. This is injected using JavaFX from main.view/read_topics.fxml
  * Implements {@link net.jini.space.JavaSpace05#registerForAvailabilityEvent(Collection, Transaction, boolean,
  * RemoteEventListener, long, MarshalledObject)} to wait for any new {@link OMNotification} or {@link OMTopic} to arrive.
  * Author: Oskar Mampe: U1564420
@@ -72,7 +72,7 @@ public class ReadAllTopicController implements RemoteEventListener{
 
         topicTable.getStyleClass().add("noheader");
 
-        createTopicButton.setGraphic(new ImageView(new Image("resources/images/icons/add.png")));
+        createTopicButton.setGraphic(new ImageView(new Image("main/resources/images/icons/add.png")));
 
         userIcon.setImage(new Image(App.mUser.image));
         userLabel.setText("Welcome, " + App.mUser.userid);
@@ -103,21 +103,11 @@ public class ReadAllTopicController implements RemoteEventListener{
         notificationsMenu.getMenus().addAll(listMenu);
     }
 
-    /**
-     *
-     * Get all {@link OMNotification} for the user.
-     *
-     */
-    private void getNotifications() {
-        try { //Single operation so no transaction
-            OMNotification notificationTemplate = new OMNotification();
-            notificationTemplate.userId = App.mUser.userid;
-            MatchSet set = ((JavaSpace05)App.mSpace).contents(Collections.singletonList(notificationTemplate), null,
-                    1000*2, Long.MAX_VALUE);
-
+    private void setNotifications(MatchSet set) {
+        try {
             if (set != null) {
                 OMNotification notification = (OMNotification) set.next();
-                while (notification != null){
+                while (notification != null) {
                     //mNotificationsValue being the items in ListView inside the notification menu item.
                     addNotification(notification.comment.owner, notification.topicName,
                             notification.comment.privateMessage, notification.delete);
@@ -131,8 +121,27 @@ public class ReadAllTopicController implements RemoteEventListener{
 
     /**
      *
+     * Get all {@link OMNotification} for the user.
+     *
+     */
+    public MatchSet getNotifications() {
+        try { //Single operation so no transaction
+            OMNotification notificationTemplate = new OMNotification();
+            notificationTemplate.userId = App.mUser.userid;
+            return ((JavaSpace05)App.mSpace).contents(Collections.singletonList(notificationTemplate), null,
+                    1000*2, Long.MAX_VALUE);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     *
      * Initializes the {@link ReadAllTopicController#topicTable} which holds all the topics. It also holds the icons
-     * and each icon is stored in a separate column with its own renderer.
+     * and each icon is stored in a separate column with its own main.renderer.
      *
      */
     private void initializeTable() {
@@ -193,7 +202,7 @@ public class ReadAllTopicController implements RemoteEventListener{
         }
     }
 
-    private void listenForMessages(){
+    public void listenForMessages(){
         // create the exporter
         Exporter myDefaultExporter =
                 new BasicJeriExporter(TcpServerEndpoint.getInstance(0),
@@ -313,7 +322,7 @@ public class ReadAllTopicController implements RemoteEventListener{
             App.mUser = null;
             SceneNavigator.loadScene(SceneNavigator.WELCOME);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 }

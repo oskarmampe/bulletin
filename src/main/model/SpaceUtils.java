@@ -1,4 +1,4 @@
-package model;
+package main.model;
 
 import net.jini.space.JavaSpace;
 import net.jini.core.transaction.server.TransactionManager;

@@ -1,6 +1,6 @@
-package callbacks;
+package main.callbacks;
 
-import application.App;
+import main.application.App;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -9,11 +9,37 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.util.Callback;
-import model.OMNotification;
-import model.OMNotificationRegister;
-import model.OMTopic;
+import main.model.OMNotificationRegister;
+import main.model.OMTopic;
 
 public class NotificationCallback implements Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> {
+
+    public void registerForNotifications(OMTopic topic){
+        try {
+            OMNotificationRegister template = new OMNotificationRegister();
+            template.userId = App.mUser.userid;
+            template.topicId = topic.id;
+
+            App.mSpace.write(template, null, 1000 * 60 * 30);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void unregisterForNotifications(OMTopic topic){
+        try {
+            OMNotificationRegister template = new OMNotificationRegister();
+            template.userId = App.mUser.userid;
+            template.topicId = topic.id;
+
+            App.mSpace.take(template, null, 1000 * 2);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public TableCell call(final TableColumn<OMTopic, String> param) {
         final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
@@ -48,35 +74,17 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
 
                     if(register != null) {
                         btn.setOnAction(event -> {
-                            try {
-                                OMNotificationRegister template = new OMNotificationRegister();
-                                template.userId = App.mUser.userid;
-                                template.topicId = getTableView().getItems().get(getIndex()).id;
-
-                                App.mSpace.take(template, null, 1000 * 60 * 30);
-
-                                imageView.setImage(new Image("resources/images/icons/alarm.png"));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            unregisterForNotifications(getTableView().getItems().get(getIndex()));
+                            imageView.setImage(new Image("main/resources/images/icons/alarm.png"));
                         });
-                        imageView.setImage(new Image("resources/images/icons/silence.png"));
+                        imageView.setImage(new Image("main/resources/images/icons/silence.png"));
                         setText(null);
                     } else {
                         btn.setOnAction(event -> {
-                            try {
-                                OMNotificationRegister template = new OMNotificationRegister();
-                                template.userId = App.mUser.userid;
-                                template.topicId = getTableView().getItems().get(getIndex()).id;
-
-                                App.mSpace.write(template, null, 1000 * 60 * 30);
-
-                                imageView.setImage(new Image("resources/images/icons/silence.png"));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            registerForNotifications(getTableView().getItems().get(getIndex()));
+                            imageView.setImage(new Image("main/resources/images/icons/silence.png"));
                         });
-                        imageView.setImage(new Image("resources/images/icons/alarm.png"));
+                        imageView.setImage(new Image("main/resources/images/icons/alarm.png"));
                         setText(null);
                     }
                 }

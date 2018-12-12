@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Text?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.CreateUserController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns:fx="http://javafx.com/fxml" fx:controller="main.controller.CreateUserController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" maxWidth="259.0" minWidth="10.0" prefWidth="259.0" />
     <ColumnConstraints hgrow="SOMETIMES" maxWidth="248.0" minWidth="10.0" prefWidth="71.0" />
@@ -34,7 +34,7 @@
             <Insets />
          </GridPane.margin>
       </ComboBox>
-      <Button onAction="#createUser" style="-fx-background-color: green; -fx-text-fill: white;" text="Create" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
+      <Button onAction="#onCreateUserButton" style="-fx-background-color: green; -fx-text-fill: white;" text="Create" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
       <Button onAction="#navigateWelcome" style="-fx-background-color: red; -fx-text-fill: white;" text="Back" GridPane.columnIndex="1" GridPane.rowIndex="3" />
    </children>
 </GridPane>

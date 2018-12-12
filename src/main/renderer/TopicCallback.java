@@ -1,9 +1,9 @@
-package renderer;
+package main.renderer;
 
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
-import model.OMTopic;
+import main.model.OMTopic;
 
 public class TopicCallback implements Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> {
     @Override

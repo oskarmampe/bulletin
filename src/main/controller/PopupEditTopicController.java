@@ -1,9 +1,9 @@
-package controller;
+package main.controller;
 
-import application.App;
+import main.application.App;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
-import model.OMTopic;
+import main.model.OMTopic;
 import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.TransactionFactory;
 
@@ -16,7 +16,14 @@ public class PopupEditTopicController implements ParametrizedController<String, 
     @FXML
     TextField topicNameTxt;
 
-    public void editTopic() {
+
+    public void onEditButtonClick() {
+        editTopic(topicNameTxt.getText());
+
+        SceneNavigator.closePopupWindow();
+    }
+
+    public void editTopic(String topicName) {
         //------- TRANSACTION -------
         Transaction.Created trc = null;
         try {
@@ -28,15 +35,18 @@ public class PopupEditTopicController implements ParametrizedController<String, 
         //------- BEG OF TRANSACTION -------
         Transaction txn = trc.transaction;
         try {
-            OMTopic template = mMap.get("topic");
+            OMTopic template = new OMTopic();
+            template.id = mMap.get("topic").id;
+            template.title = mMap.get("topic").title;
+            template.owner = App.mUser.userid;
 
             try {
                 OMTopic topic = (OMTopic) App.mSpace.take(template, txn, 1000);
 
-                if(topic != null)
-                    topic.title = topicNameTxt.getText();
-
-                App.mSpace.write(topic, txn, 1000 * 60 * 30);
+                if(topic != null) {
+                    topic.title = topicName;
+                    App.mSpace.write(topic, txn, 1000 * 60 * 30);
+                }
                 txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -45,7 +55,6 @@ public class PopupEditTopicController implements ParametrizedController<String, 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        SceneNavigator.closePopupWindow();
     }
 
     @Override

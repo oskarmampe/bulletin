@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="350.0" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.PopupCreateTopicController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="350.0" xmlns:fx="http://javafx.com/fxml" fx:controller="main.controller.PopupCreateTopicController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -30,6 +30,6 @@
          </padding>
       </Label>
       <Label text="Create topic by entering topic name below" GridPane.columnSpan="3" GridPane.halignment="CENTER" />
-      <Button mnemonicParsing="false" onAction="#createTopic" style="-fx-background-color: #5cbcf6#5cbcf6; -fx-text-fill: white;" text="Create" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
+      <Button mnemonicParsing="false" onAction="#onCreateTopicButtonClick" style="-fx-background-color: #5cbcf6#5cbcf6; -fx-text-fill: white;" text="Create" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
    </children>
 </GridPane>

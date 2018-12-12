@@ -1,6 +1,6 @@
-package callbacks;
+package main.callbacks;
 
-import controller.SceneNavigator;
+import main.controller.SceneNavigator;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -9,7 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.util.Callback;
-import model.OMTopic;
+import main.model.OMTopic;
 
 import java.util.HashMap;
 
@@ -38,7 +38,7 @@ public class ViewCallback implements Callback<TableColumn<OMTopic, String>, Tabl
                     btn.setOnAction(event -> {
                         viewTopic( getTableView().getItems().get(getIndex()) );
                     });
-                    ImageView imageView = new ImageView(new Image("resources/images/icons/view.png"));
+                    ImageView imageView = new ImageView(new Image("main/resources/images/icons/view.png"));
                     imageView.setFitHeight(18);
                     imageView.setFitWidth(18);
                     setMaxWidth(18);

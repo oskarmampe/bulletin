@@ -1,4 +1,4 @@
-package controller;
+package main.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.layout.Pane;
@@ -6,7 +6,7 @@ import javafx.scene.layout.StackPane;
 
 /**
  *
- * Main controller. This is injected using JavaFX from view/main.fxml
+ * Main main.controller. This is injected using JavaFX from main.view/main.fxml
  * Author: Oskar Mampe: U1564420
  * Date: 10/11/2018
  *
