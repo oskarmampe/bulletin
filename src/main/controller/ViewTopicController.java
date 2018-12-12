@@ -33,9 +33,6 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     Label topicTitle;
 
     @FXML
-    ListView postList;
-
-    @FXML
     TextField sendMessage;
 
     @FXML
@@ -44,18 +41,13 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
     @FXML
     ComboBox privateCMB;
 
-    private ArrayList<OMPost> mPosts = new ArrayList<>();
     private RemoteEventListener mStub;
-    private ObservableList<String> mPostItems;
     private ObservableList<String> mMessageItems;
     private HashMap<String, OMTopic> mMap;
 
     @FXML
     public void initialize(){
-        mPostItems = FXCollections.observableArrayList();
-        postList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
-        });
 
         sendMessage.setOnKeyPressed((event) -> {
             if(event.getCode().impl_getCode() == KeyEvent.VK_ENTER) {
@@ -69,35 +61,13 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
         mMessageItems = FXCollections.observableArrayList();
         chat.setItems(mMessageItems);
-        postList.setItems(mPostItems);
     }
 
     @Override
     public void setParameters(HashMap<String, OMTopic> map) {
-        mPostItems.clear();
         mMap = map;
         OMTopic topic = map.get("topic");
         topicTitle.setText(topic.title);
-
-        try{
-            OMPost template = new OMPost();
-            template.topicId = topic.id;
-
-            MatchSet get = ((JavaSpace05) App.mSpace).contents(new ArrayList<>(Collections.singletonList(template)),
-                    null, 1000 * 5, Long.MAX_VALUE);
-            if (get != null) {
-                OMPost post = (OMPost) get.next();
-                while (post != null) {
-                    mPosts.add(post);
-                    mPostItems.add(post.title);
-                    post = (OMPost) get.next();
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         listenForMessages();
         chat.getItems().clear();
         getAllComments();
@@ -137,35 +107,44 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
             registerTemplate.topicId = mMap.get("topic").id;
 
             try {
+                OMTopic topic = (OMTopic) App.mSpace.read(mMap.get("topic"), txn, 1000);
+                if (topic != null) {
+                    MatchSet set = ((JavaSpace05) App.mSpace).contents(Collections.singletonList(registerTemplate), txn,
+                            1000 * 5, Long.MAX_VALUE);
 
-                MatchSet set = ((JavaSpace05) App.mSpace).contents(Collections.singletonList(registerTemplate), txn,
-                        1000 * 5, Long.MAX_VALUE);
+                    if (set != null) {
+                        OMNotificationRegister register = (OMNotificationRegister) set.next();
+                        ArrayList<OMNotification> notifications = new ArrayList<>();
 
-                if (set != null) {
-                    OMNotificationRegister register = (OMNotificationRegister) set.next();
-                    ArrayList<OMNotification> notifications = new ArrayList<>();
+                        while (register != null) {
+                            if (!register.userId.equals(App.mUser.userid)) {
 
-                    while (register != null) {
+                                OMNotification notification = new OMNotification();
+                                notification.userId = register.userId;
+                                notification.topicName = mMap.get("topic").title;
+                                notification.comment = comment;
+                                notification.delete = false;
+                                notification.topicId = mMap.get("topic").id;
 
-                        OMNotification notification = new OMNotification();
-                        notification.userId = register.userId;
-                        notification.topicName = mMap.get("topic").title;
-                        notification.comment = comment;
-                        notification.topicId = mMap.get("topic").id;
+                                notifications.add(notification);
+                            }
 
-                        notifications.add(notification);
+                            register = (OMNotificationRegister) set.next();
+                        }
+                        if (!notifications.isEmpty()) {
+                            ArrayList<Long> leaseDurations = new ArrayList<>(Collections.nCopies(notifications.size(),
+                                    (long) (1000 * 60 * 30)));
 
-                        register = (OMNotificationRegister) set.next();
+                            ((JavaSpace05) App.mSpace).write(notifications, txn, leaseDurations);
+                        }
                     }
-                    if(!notifications.isEmpty()) {
-                        ArrayList<Long> leaseDurations = new ArrayList<>(Collections.nCopies(notifications.size(),
-                                (long) (1000 * 60 * 30)));
-
-                        ((JavaSpace05) App.mSpace).write(notifications, txn, leaseDurations);
-                    }
+                } else {
+                    SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
+                    SceneNavigator.showBasicPopupWindow("The topic has been deleted. Your message could not be sent.");
                 }
-                txn.commit();
+                App.mLease.renew(1000*60*2);
                 //------- END OF TRANSACTION -------
+                txn.commit();
             } catch (Exception e) {
                 e.printStackTrace();
                 txn.abort();
@@ -188,51 +167,43 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         //------- BEG OF TRANSACTION -------
         Transaction txn = trc.transaction;
         try {
-            try {
-                OMComment comment = new OMComment(sendMessage.getText(), true, 0, App.mUser.userid, mMap.get("topic").id);
-                App.mSpace.write(comment, txn, 1000 * 60 * 5);
+                try {
+                    OMTopic topic = (OMTopic) App.mSpace.read(mMap.get("topic"), txn, 1000);
+                    if(topic != null) {
+                        OMComment comment = new OMComment(sendMessage.getText(), true, 0, App.mUser.userid, mMap.get("topic").id);
+                        App.mSpace.write(comment, txn, 1000 * 60 * 30);
 
-                OMNotificationRegister registerTemplate = new OMNotificationRegister();
-                registerTemplate.topicId = mMap.get("topic").id;
-                registerTemplate.userId = App.mUser.userid;
-                ArrayList<OMNotificationRegister> registers = new ArrayList<>();
-                registers.add(registerTemplate);
-                registerTemplate.userId = mMap.get("topic").owner;
-                registers.add(registerTemplate);
+                        if (!App.mUser.userid.equals(mMap.get("topic").owner)) {
+                            OMNotificationRegister registerTemplate = new OMNotificationRegister();
+                            registerTemplate.topicId = mMap.get("topic").id;
+                            registerTemplate.userId = App.mUser.userid;
+                            registerTemplate.userId = mMap.get("topic").owner;
 
-                MatchSet set = ((JavaSpace05) App.mSpace).contents(registers , txn,
-                        1000 * 5, Long.MAX_VALUE);
+                            OMNotificationRegister register = (OMNotificationRegister) App.mSpace.read(registerTemplate, txn, 1000);
 
-                if (set != null) {
-                    OMNotificationRegister register = (OMNotificationRegister) set.next();
-                    ArrayList<OMNotification> notifications = new ArrayList<>();
+                            if (register != null) {
+                                OMNotification notification = new OMNotification();
+                                notification.userId = mMap.get("topic").owner;
+                                notification.topicName = mMap.get("topic").title;
+                                notification.comment = comment;
+                                notification.delete = false;
+                                notification.topicId = mMap.get("topic").id;
 
-                    while (register != null) {
-
-                        OMNotification notification = new OMNotification();
-                        notification.userId = register.userId;
-                        notification.topicName = mMap.get("topic").title;
-                        notification.comment = comment;
-                        notification.topicId = mMap.get("topic").id;
-
-                        notifications.add(notification);
-
-                        register = (OMNotificationRegister) set.next();
+                                App.mSpace.write(notification, txn, 1000 * 60 * 30);
+                            }
+                        }
+                        App.mLease.renew(1000 * 60 * 2);
+                    } else {
+                        SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
+                        SceneNavigator.showBasicPopupWindow("The topic has been deleted. Your message could not be sent.");
                     }
-                    if(!notifications.isEmpty()) {
-                        ArrayList<Long> leaseDurations = new ArrayList<>(Collections.nCopies(notifications.size(),
-                                (long) (1000 * 60 * 30)));
-
-                        ((JavaSpace05) App.mSpace).write(notifications, txn, leaseDurations);
-                    }
+                    //------- END OF TRANSACTION -------
+                    txn.commit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    txn.abort();
                 }
 
-                //------- END OF TRANSACTION -------
-                txn.commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-                txn.abort();
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }

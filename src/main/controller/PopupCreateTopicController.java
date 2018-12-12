@@ -64,34 +64,9 @@ public class PopupCreateTopicController {
                 App.mSpace.write(obj, txn, 1000 * 60 * 20);
                 App.mSpace.write(counter, txn, 1000 * 60 * 30);
 
-                OMNotificationRegister registerTemplate = new OMNotificationRegister();
-                OMUser userTemplate = new OMUser();
+                txn.commit();
 
-                MatchSet set = ((JavaSpace05) App.mSpace).contents(Collections.singletonList(userTemplate), txn,
-                        1000, Long.MAX_VALUE);
-
-                if (set != null) {
-                    ArrayList<OMNotificationRegister> registers = new ArrayList<>();
-                    OMUser user = (OMUser) set.next();
-
-                    while (user != null) {
-                        OMNotificationRegister register = new OMNotificationRegister();
-                        register.topicId = obj.id;
-                        register.userId = user.userid;
-
-                        registers.add(register);
-
-                        user = (OMUser) set.next();
-                    }
-
-                    ArrayList<Long> leaseDurations = new ArrayList<>(Collections.nCopies(registers.size(),
-                            (long) (1000 * 60 * 30)));
-
-                    ((JavaSpace05) App.mSpace).write(registers, txn, leaseDurations);
-
-                    txn.commit();
-                    //------- END OF TRANSACTION -------
-                }
+                App.mLease.renew(1000*60*2);
             } catch (Exception e) {
                 e.printStackTrace();
                 txn.abort();

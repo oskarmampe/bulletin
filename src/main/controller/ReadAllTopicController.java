@@ -119,7 +119,8 @@ public class ReadAllTopicController implements RemoteEventListener{
                 OMNotification notification = (OMNotification) set.next();
                 while (notification != null){
                     //mNotificationsValue being the items in ListView inside the notification menu item.
-                    addNotification(notification.comment.owner, notification.topicName, notification.comment.privateMessage);
+                    addNotification(notification.comment.owner, notification.topicName,
+                            notification.comment.privateMessage, notification.delete);
                     notification = (OMNotification) set.next();
                 }
             }
@@ -269,7 +270,8 @@ public class ReadAllTopicController implements RemoteEventListener{
 
             } else if (entry instanceof OMNotification) {
                 System.out.println("notification arrived");
-               addNotification(((OMNotification) entry).comment.owner, ((OMNotification) entry).topicName, ((OMNotification) entry).comment.privateMessage);
+               addNotification(((OMNotification) entry).comment.owner, ((OMNotification) entry).topicName,
+                       ((OMNotification) entry).comment.privateMessage, ((OMNotification) entry).delete);
             } else if (entry instanceof OMTopic) {
                 System.out.println("topic notifiyed");
                 for (OMTopic topic : mTopics) {
@@ -289,13 +291,29 @@ public class ReadAllTopicController implements RemoteEventListener{
         SceneNavigator.showPopupWindow(SceneNavigator.CREATE_TOPIC_POPUP);
     }
 
-    private void addNotification(String userId, String topicName, boolean type) {
+    private void addNotification(String userId, String topicName, boolean type, boolean delete) {
         Platform.runLater(() -> {
-            mNotificationsValue.add( "User " + userId + " has posted a " + (type ? "private" : "public") + " message in " + topicName );
+            if (!delete) {
+                mNotificationsValue.add("User " + userId + " has posted a " + (type ? "private" : "public") + " message in " + topicName);
+            } else {
+                mNotificationsValue.add(topicName + " has been deleted, along with all of it's messages.");
+            }
             notificationsMenu.getMenus().get(0).setText("Notifications: " + mNotificationsValue.size());
         });
 
     }
 
+    public void logout() {
+        try {
+            OMLoggedInUser template = new OMLoggedInUser();
+            template.userId = App.mUser.userid;
 
+            App.mSpace.take(template, null, 1000);
+
+            App.mUser = null;
+            SceneNavigator.loadScene(SceneNavigator.WELCOME);
+        } catch (Exception e) {
+
+        }
+    }
 }

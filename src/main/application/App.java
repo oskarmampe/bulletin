@@ -8,8 +8,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import model.OMLoggedInUser;
 import model.OMUser;
 import model.SpaceUtils;
+import net.jini.core.lease.Lease;
 import net.jini.core.transaction.server.TransactionManager;
 import net.jini.space.JavaSpace;
 
@@ -29,6 +31,7 @@ public class App extends Application {
     //Javaspace entries. Set as static so they're loaded once, releasing pressure on network traffic.
     public static JavaSpace mSpace;
     public static TransactionManager mTransactionManager;
+    public static Lease mLease;
 
     //Logged in User.
     public static OMUser mUser;
@@ -42,6 +45,20 @@ public class App extends Application {
 
         //Needed to close properly, without this, the application is still running in the background
         primaryStage.setOnCloseRequest(t -> {
+            if (App.mUser != null) {
+                try {
+                    OMLoggedInUser loggedInUser = new OMLoggedInUser();
+                    loggedInUser.userId = App.mUser.userid;
+
+                    App.mSpace.take(loggedInUser, null, 1000);
+                } catch (Exception e) {
+                    Platform.exit();
+                    System.exit(0);
+                }
+
+            }
+            mSpace = null;
+            mTransactionManager = null;
             Platform.exit();
             System.exit(0);
         });
@@ -63,7 +80,7 @@ public class App extends Application {
         //Main controller is the controller for the main fxml.
         MainController mainController = loader.getController();
 
-        //Scenenavigator is a singleton responsible for scene switching. It needs the main controller to load the main fxml properly.
+        //SceneNavigator is a singleton responsible for scene switching. It needs the main controller to load the main fxml properly.
         SceneNavigator.setMainController(mainController);
         SceneNavigator.loadScene(SceneNavigator.WELCOME);
 

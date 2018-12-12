@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane stylesheets="@/resources/styles/styles.css" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.ReadAllTopicController">
+<GridPane stylesheets="@/resources/styles/styles.css" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.1" fx:controller="controller.ReadAllTopicController">
    <columnConstraints>
       <ColumnConstraints />
       <ColumnConstraints />
@@ -46,6 +46,7 @@
          <GridPane.margin>
             <Insets left="100.0" />
          </GridPane.margin></Label>
-      <Button fx:id="createTopicButton" onAction="#createUser" mnemonicParsing="false" prefHeight="32.0" prefWidth="32.0" style="-fx-background-color: transparent;" GridPane.columnIndex="6" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+      <Button fx:id="createTopicButton" mnemonicParsing="false" onAction="#createUser" prefHeight="32.0" prefWidth="32.0" style="-fx-background-color: transparent;" GridPane.columnIndex="6" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+      <Button onAction="#logout" mnemonicParsing="false" style="-fx-text-fill: white; -fx-background-color: red;" text="Logout" GridPane.columnIndex="1" GridPane.rowIndex="1" />
    </children>
 </GridPane>

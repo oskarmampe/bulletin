@@ -31,7 +31,7 @@ public class SpaceUtils {
     }
 
     public static JavaSpace getSpace() {
-        return getSpace("pc-130-196.customer.ask4.lan");
+        return getSpace("oskarl.local");
     }
 
 
@@ -58,7 +58,7 @@ public class SpaceUtils {
     }
 
     public static TransactionManager getManager() {
-        return getManager("pc-130-196.customer.ask4.lan");
+        return getManager("oskarl.local");
     }
 }
 

@@ -4,6 +4,7 @@ import application.App;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import model.OMLoggedInUser;
 import model.OMUser;
 
 import javax.crypto.SecretKeyFactory;
@@ -25,14 +26,18 @@ public class WelcomeController {
     }
 
     public void login() {
-
-
         OMUser template = new OMUser();
-        template.userid = username.getText();
+        OMLoggedInUser loggedInTemplate = new OMLoggedInUser();
 
+        template.userid = username.getText();
+        loggedInTemplate.userId = username.getText();
         try {
             OMUser user = (OMUser) App.mSpace.read(template, null, 1000*2);
-
+            OMLoggedInUser loggedInUser = (OMLoggedInUser) App.mSpace.read(loggedInTemplate, null, 1000);
+            if (loggedInUser != null ){
+                SceneNavigator.showBasicPopupWindow("User already logged in.");
+                return;
+            }
             if(user != null) {
                 KeySpec spec = new PBEKeySpec(password.getText().toCharArray(), user.salt, 65536, 128);
                 SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
@@ -42,6 +47,10 @@ public class WelcomeController {
                 if(enc.encodeToString(hash).equals(user.password)) {
                     App.mUser = user;
                     SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
+                    OMLoggedInUser newLogIn = new OMLoggedInUser();
+                    newLogIn.userId = user.userid;
+                    App.mLease = App.mSpace.write(newLogIn, null, 1000*60*4);
+
                 } else {
                     SceneNavigator.showBasicPopupWindow("Invalid credentials.");
                 }

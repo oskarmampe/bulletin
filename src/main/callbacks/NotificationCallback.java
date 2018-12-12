@@ -30,7 +30,7 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
                     OMNotificationRegister register = null;
                     try {
                         OMNotificationRegister template = new OMNotificationRegister();
-                        template.userId = getTableView().getItems().get(getIndex()).owner;
+                        template.userId = App.mUser.userid;
                         template.topicId = getTableView().getItems().get(getIndex()).id;
                         register = (OMNotificationRegister) App.mSpace.read(template, null, 1000);
                     } catch (Exception e) {
@@ -50,7 +50,7 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
                         btn.setOnAction(event -> {
                             try {
                                 OMNotificationRegister template = new OMNotificationRegister();
-                                template.userId = getTableView().getItems().get(getIndex()).owner;
+                                template.userId = App.mUser.userid;
                                 template.topicId = getTableView().getItems().get(getIndex()).id;
 
                                 App.mSpace.take(template, null, 1000 * 60 * 30);
@@ -66,7 +66,7 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
                         btn.setOnAction(event -> {
                             try {
                                 OMNotificationRegister template = new OMNotificationRegister();
-                                template.userId = getTableView().getItems().get(getIndex()).owner;
+                                template.userId = App.mUser.userid;
                                 template.topicId = getTableView().getItems().get(getIndex()).id;
 
                                 App.mSpace.write(template, null, 1000 * 60 * 30);

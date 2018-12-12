@@ -3,6 +3,7 @@ package controller;
 import application.App;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import model.OMLoggedInUser;
 import model.OMUser;
 import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.TransactionFactory;
@@ -47,6 +48,16 @@ public class CreateUserController {
     }
 
     public void createUser()throws NoSuchAlgorithmException, InvalidKeySpecException {
+        //------- TRANSACTION -------
+        Transaction.Created trc = null;
+        try {
+            trc = TransactionFactory.create(App.mTransactionManager, 1000*5);
+        } catch (Exception e) {
+            System.out.println("Could not create transaction " + e);
+        }
+
+        //------- BEG OF TRANSACTION -------
+        Transaction txn = trc.transaction;
         byte[] salt = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(salt);
@@ -57,19 +68,10 @@ public class CreateUserController {
         try {
             OMUser template = new OMUser();
             template.userid = usernameTxt.getText();
-            //------- TRANSACTION -------
-            Transaction.Created trc = null;
-            try {
-                trc = TransactionFactory.create(App.mTransactionManager, 3000);
-            } catch (Exception e) {
-                System.out.println("Could not create transaction " + e);
-            }
 
-            //------- BEG OF TRANSACTION -------
-            Transaction txn = trc.transaction;
 
             try {
-                OMUser user = (OMUser) App.mSpace.read(template, txn, 1000 * 2);
+                OMUser user = (OMUser) App.mSpace.read(template, txn, 1000);
                 if (user == null) {
                     template.password = enc.encodeToString(hash);
                     template.salt = salt;
@@ -77,6 +79,12 @@ public class CreateUserController {
 
                     App.mSpace.write(template, txn, 1000 * 60 * 30);
                     App.mUser = template;
+
+                    OMLoggedInUser loggedInUser = new OMLoggedInUser();
+                    loggedInUser.userId = template.userid;
+
+                    App.mLease = App.mSpace.write(loggedInUser, txn, 1000*60*4);
+
                     SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
                 } else {
                     SceneNavigator.showBasicPopupWindow("Username is taken. Please try again with a different username.");

@@ -7,6 +7,7 @@ public class OMNotification implements Entry {
     public String topicName;
     public String userId;
     public OMComment comment;
+    public Boolean delete;
     public Integer index;
 
     public OMNotification() {
