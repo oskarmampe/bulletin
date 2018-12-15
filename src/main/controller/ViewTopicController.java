@@ -27,6 +27,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+/**
+ *
+ * ViewTopicController main.controller. This is injected using JavaFX from main.view/view_topic.fxml
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ */
 public class ViewTopicController implements ParametrizedController<String, OMTopic>, RemoteEventListener {
 
     @FXML
@@ -69,18 +76,36 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         OMTopic topic = map.get("topic");
         topicTitle.setText(topic.title);
         listenForMessages();
-        chat.getItems().clear();
+        mMessageItems.clear();
         getAllComments();
         getPrivateComments();
     }
+
+    /**
+     *
+     * Sets the map without initializing
+     *
+     * @param map {@link HashMap}
+     */
     public void setMap(HashMap<String, OMTopic> map) {
         mMap = map;
     }
 
+    /**
+     *
+     * Injected using JavaFX in view_topic.fxml
+     *
+     */
     public void readTopics() {
         SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
     }
 
+
+    /**
+     *
+     * Injected using JavaFX in view_topic.fxml
+     *
+     */
     public void sendButton(){
         if(privateCMB.getSelectionModel().isSelected(0)) {
             sendMessage(sendMessage.getText());
@@ -90,6 +115,12 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         sendMessage.setText("");
     }
 
+    /**
+     *
+     * Sends a public message @link OMComment#privateMessage} = true to the {@link net.jini.space.JavaSpace}
+     *
+     * @param message {@link String} the message content sent to the space
+     */
     public void sendMessage(String message) {
         if(message.trim().equals("") || message.isEmpty()){
             return;
@@ -114,10 +145,11 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
             try {
                 OMTopic topic = (OMTopic) App.mSpace.read(mMap.get("topic"), txn, 1000);
-                if (topic != null) {
+                if (topic != null) {//Check if the topic still exists, or has it been deleted.
                     MatchSet set = ((JavaSpace05) App.mSpace).contents(Collections.singletonList(registerTemplate), txn,
                             1000 * 5, Long.MAX_VALUE);
 
+                    //------- SEND A NOTIFICATION TO ALL REGISTERED USERS -------
                     if (set != null) {
                         OMNotificationRegister register = (OMNotificationRegister) set.next();
                         ArrayList<OMNotification> notifications = new ArrayList<>();
@@ -148,9 +180,9 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                     SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
                     SceneNavigator.showBasicPopupWindow("The topic has been deleted. Your message could not be sent.");
                 }
-                App.mLease.renew(1000*60*2);
-                //------- END OF TRANSACTION -------
+                App.mLease.renew(1000*60*10);
                 txn.commit();
+                //------- END OF TRANSACTION -------
             } catch (ExceptionInInitializerError | NoClassDefFoundError e1) {
                 e1.printStackTrace();
             } catch (Exception e) {
@@ -163,6 +195,12 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         }
     }
 
+    /**
+     *
+     * Send a private message {@link OMComment#privateMessage} = true to the {@link net.jini.space.JavaSpace}
+     *
+     * @param message {@link String} sends a message to the space
+     */
     public void sendPrivateMessage(String message){
         if(message.trim().equals("") || message.isEmpty()){
             return;
@@ -192,7 +230,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
                             OMNotificationRegister register = (OMNotificationRegister) App.mSpace.read(registerTemplate, txn, 1000);
 
-                            if (register != null) {
+                            if (register != null) {//NOTIFY THE OWNER ONLY AND ONLY IF HE IS REGISTERED TO RECEIVE NOTIFICATIONS
                                 OMNotification notification = new OMNotification();
                                 notification.userId = mMap.get("topic").owner;
                                 notification.topicName = mMap.get("topic").title;
@@ -203,7 +241,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                                 App.mSpace.write(notification, txn, 1000 * 60 * 30);
                             }
                         }
-                        App.mLease.renew(1000 * 60 * 2);
+                        App.mLease.renew(1000 * 60 * 10);
                     } else {
                         SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
                         SceneNavigator.showBasicPopupWindow("The topic has been deleted. Your message could not be sent.");
@@ -223,6 +261,11 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         }
     }
 
+    /**
+     *
+     * Listen for notifications about a new {@link OMComment} arriving
+     *
+     */
     private void listenForMessages(){
         // create the exporter
         Exporter myDefaultExporter =
@@ -231,7 +274,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
         try {
             // register this as a remote object
-            // and get a reference to the 'stu'
+            // and get a reference to the 'mStub'
             mStub = (RemoteEventListener) myDefaultExporter.export(this);
 
             // add the listener
@@ -243,17 +286,21 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
         }
     }
 
+    @Override
     public void notify(RemoteEvent ev) {
         Platform.runLater(() -> {
-            chat.getItems().clear();
+            mMessageItems.clear();
             getAllComments();
             getPrivateComments();
         });
     }
 
+    /**
+     *
+     * Gets all the {@link OMComment} that are {@link OMComment#privateMessage} = false from {@link net.jini.space.JavaSpace}
+     *
+     */
     private void getAllComments(){
-        // this is the method called when we are notified
-        // of an object of interest
         OMComment template = new OMComment();
         template.privateMessage = false;
         template.topicId = mMap.get("topic").id;
@@ -268,7 +315,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                     messages.add(comment.owner + ": " + comment.content);
                     comment = (OMComment) result.next();
                 }
-               chat.getItems().addAll(messages);
+               mMessageItems.addAll(messages);
 
             }
         } catch (Exception e) {
@@ -277,6 +324,11 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
 
     }
 
+    /**
+     *
+     * Gets all {@link OMComment} that are @link OMComment#privateMessage} = true from {@link net.jini.space.JavaSpace}
+     *
+     */
     private void getPrivateComments(){
         OMComment template = new OMComment();
         template.privateMessage = true;
@@ -295,7 +347,7 @@ public class ViewTopicController implements ParametrizedController<String, OMTop
                     messages.add(comment.owner + ": " + comment.content);
                     comment = (OMComment) result.next();
                 }
-                chat.getItems().addAll(messages);
+                mMessageItems.addAll(messages);
 
             }
         } catch (Exception e) {

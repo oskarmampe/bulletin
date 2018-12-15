@@ -6,12 +6,10 @@ import main.controller.PopupCreateTopicController;
 import main.model.OMTopic;
 import net.jini.core.entry.Entry;
 import net.jini.space.JavaSpace05;
-import net.jini.space.MatchSet;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import static org.junit.Assert.*;
 

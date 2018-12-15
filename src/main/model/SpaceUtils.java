@@ -6,6 +6,11 @@ import net.jini.core.discovery.LookupLocator;
 import net.jini.core.lookup.ServiceRegistrar;
 import net.jini.core.lookup.ServiceTemplate;
 
+/**
+ *
+ * Model to retrieve a {@link JavaSpace} and a {@link TransactionManager}.
+ * from {@link net.jini.space.JavaSpace}
+ */
 public class SpaceUtils {
 
     public static JavaSpace getSpace(String hostname) {
@@ -31,7 +36,7 @@ public class SpaceUtils {
     }
 
     public static JavaSpace getSpace() {
-        return getSpace("oskarl.local");
+        return getSpace("pc-130-196.customer.ask4.lan");
     }
 
 
@@ -58,7 +63,7 @@ public class SpaceUtils {
     }
 
     public static TransactionManager getManager() {
-        return getManager("oskarl.local");
+        return getManager("pc-130-196.customer.ask4.lan");
     }
 }
 

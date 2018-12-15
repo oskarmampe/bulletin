@@ -103,22 +103,6 @@ public class ReadAllTopicController implements RemoteEventListener{
         notificationsMenu.getMenus().addAll(listMenu);
     }
 
-    private void setNotifications(MatchSet set) {
-        try {
-            if (set != null) {
-                OMNotification notification = (OMNotification) set.next();
-                while (notification != null) {
-                    //mNotificationsValue being the items in ListView inside the notification menu item.
-                    addNotification(notification.comment.owner, notification.topicName,
-                            notification.comment.privateMessage, notification.delete);
-                    notification = (OMNotification) set.next();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      *
      * Get all {@link OMNotification} for the user.
@@ -184,6 +168,11 @@ public class ReadAllTopicController implements RemoteEventListener{
     }
 
 
+    /**
+     *
+     * Read all topics stored in the {@link net.jini.space.JavaSpace}.
+     *
+     */
     private void readAllTopics() {
         OMTopic template = new OMTopic();
         try {
@@ -202,6 +191,12 @@ public class ReadAllTopicController implements RemoteEventListener{
         }
     }
 
+    /**
+     *
+     * Method responsible for registering for notifications from {@link RemoteEventListener}.
+     * This method is waiting for {@link OMTopic}, {@link OMTopicCounter} and {@link OMNotification}
+     *
+     */
     public void listenForMessages(){
         // create the exporter
         Exporter myDefaultExporter =
@@ -236,7 +231,6 @@ public class ReadAllTopicController implements RemoteEventListener{
 
     @Override
     public void notify(RemoteEvent ev) {
-        System.out.println("notified");
         AvailabilityEvent event = (AvailabilityEvent) ev;
 
             Entry entry = null;
@@ -257,7 +251,8 @@ public class ReadAllTopicController implements RemoteEventListener{
                     if (set != null) {
                         OMTopic topic = (OMTopic) set.next();
                         ArrayList<OMTopic> topics = new ArrayList<>(mTopics);
-
+                        //Find all the topics. Any topics that do not exist is the newly arrived list, remove from the
+                        //list view.
                         while (topic != null) {
                             if (!mTopics.contains(topic)) {
                                 mTopics.add(topic);
@@ -278,16 +273,12 @@ public class ReadAllTopicController implements RemoteEventListener{
 
 
             } else if (entry instanceof OMNotification) {
-                System.out.println("notification arrived");
-               addNotification(((OMNotification) entry).comment.owner, ((OMNotification) entry).topicName,
-                       ((OMNotification) entry).comment.privateMessage, ((OMNotification) entry).delete);
-            } else if (entry instanceof OMTopic) {
-                System.out.println("topic notifiyed");
+               addNotification(((OMNotification) entry).comment != null ? ((OMNotification) entry).comment.owner : "", ((OMNotification) entry).topicName,
+                       ((OMNotification) entry).comment != null ? ((OMNotification) entry).comment.privateMessage : false, ((OMNotification) entry).delete);
+            } else if (entry instanceof OMTopic) {//If a new topic arrived, then it was just added to the space, or edited.
                 for (OMTopic topic : mTopics) {
-                    System.out.println("topic nod");
                     if(topic.index.intValue() == ((OMTopic) entry).index.intValue()
                             && topic.id.equals(((OMTopic) entry).id) && topic.owner.equals(((OMTopic) entry).owner)){
-                        System.out.println("topic");
                         topic.title = ((OMTopic) entry).title;
                         topicTable.refresh();
                     }
@@ -296,12 +287,26 @@ public class ReadAllTopicController implements RemoteEventListener{
 
     }
 
+    /**
+     *
+     * Injected into JavaFX using read_topics.fxml.
+     *
+     */
     public void createUser() {
         SceneNavigator.showPopupWindow(SceneNavigator.CREATE_TOPIC_POPUP);
     }
 
+    /**
+     *
+     * Method for displaying the notifications into the menu. Its a method so it doesn't have to be change in multiple places.
+     *
+     * @param userId {@link String} the id of the user
+     * @param topicName {@link String} the topic name
+     * @param type {@link Boolean} type of the comment that arrived, private or public
+     * @param delete {@link Boolean} whether the notification is about delete or not
+     */
     private void addNotification(String userId, String topicName, boolean type, boolean delete) {
-        Platform.runLater(() -> {
+        Platform.runLater(() -> {//Needed to get rid of a JavaFX rendering error
             if (!delete) {
                 mNotificationsValue.add("User " + userId + " has posted a " + (type ? "private" : "public") + " message in " + topicName);
             } else {
@@ -312,6 +317,11 @@ public class ReadAllTopicController implements RemoteEventListener{
 
     }
 
+    /**
+     *
+     * Logs the user out and navigates back to the welcome screen.
+     *
+     */
     public void logout() {
         try {
             OMLoggedInUser template = new OMLoggedInUser();

@@ -5,17 +5,14 @@ import main.application.HashPassword;
 import main.callbacks.DeleteCallback;
 import main.callbacks.NotificationCallback;
 import main.controller.PopupCreateTopicController;
-import main.controller.PopupEditTopicController;
 import main.controller.ReadAllTopicController;
 import main.model.*;
-import net.jini.core.event.EventRegistration;
 import net.jini.space.JavaSpace05;
 import net.jini.space.MatchSet;
 import org.junit.Test;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 
 import static org.junit.Assert.*;
 
@@ -135,13 +132,13 @@ public class ReadAllTopicControllerTest extends SignedInUserTest{
         template.index = 0;
         template.title = "TopicName";
         try {
-            assertNotNull(App.mSpace.read(template, null, 1000 * 2));
+            assertNotNull(App.mSpace.read(template, null, 1000 * 4));
             callback.registerForNotifications(template);
             OMNotificationRegister register = new OMNotificationRegister();
             register.userId = App.mUser.userid;
             register.topicId = template.id;
 
-            assertNotNull(App.mSpace.take(register, null, 1000*2));
+            assertNotNull(App.mSpace.take(register, null, 1000*4));
         } catch (Exception e){
             fail();
         }

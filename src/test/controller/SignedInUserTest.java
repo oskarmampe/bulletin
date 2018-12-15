@@ -17,7 +17,7 @@ public class SignedInUserTest extends JavaSpaceTest {
             user.userid = "goodusername";
             user.salt = HashPassword.generateRandomSalt();
             user.password = HashPassword.convertToHash("goodpassword", user.salt);
-            App.mSpace.write(user, null, 10000);
+            App.mSpace.write(user, null, 1000*60);
             assertTrue(controller.getUserFromSpace("goodusername", "goodpassword"));
         } catch (Exception e) {
             fail();

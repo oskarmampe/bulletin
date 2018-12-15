@@ -4,12 +4,7 @@ import main.application.App;
 import main.application.HashPassword;
 import main.controller.WelcomeController;
 import main.model.OMUser;
-import main.model.SpaceUtils;
-import net.jini.core.entry.UnusableEntryException;
-import net.jini.core.transaction.TransactionException;
 import org.junit.Test;
-
-import java.rmi.RemoteException;
 
 import static org.junit.Assert.*;
 

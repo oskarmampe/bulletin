@@ -14,13 +14,27 @@ import main.model.OMTopic;
 
 import java.util.HashMap;
 
+/**
+ *
+ * Callback of a column. Responsible for cell rendering within a table. This one implements the edit topic functionality.
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ * @see Callback
+ */
 public class EditCallback implements Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> {
     @Override
-    public TableCell call(final TableColumn<OMTopic, String> param) {
-        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
+    public TableCell<OMTopic, String> call(final TableColumn<OMTopic, String> param) {
+        return new TableCell<OMTopic, String>() {
 
-            final Button btn = new Button();
+            final Button mBtn = new Button();
 
+            /**
+             *
+             * Displays the edit topic popup, and sends the topic to be edited in a {@link HashMap}
+             *
+             * @param topic {@link OMTopic}
+             */
             private void editTopic(OMTopic topic) {
                 HashMap<String, OMTopic> map = new HashMap<>();
                 map.put("topic", topic);
@@ -35,17 +49,22 @@ public class EditCallback implements Callback<TableColumn<OMTopic, String>, Tabl
                     setText(null);
                 } else {
                     if(getTableView().getItems().get(getIndex()).owner.equals(App.mUser.userid)) {
-                        btn.setOnAction(event -> {
-                            editTopic(getTableView().getItems().get(getIndex()));
-                        });
+                        //------- SETTING UP EDIT IMAGE -------
                         ImageView imageView = new ImageView(new Image("main/resources/images/icons/edit.png"));
                         imageView.setFitHeight(18);
                         imageView.setFitWidth(18);
-                        setMaxWidth(18);
+
+                        //------- SETTING BUTTON -------
+                        mBtn.setOnAction(event -> {
+                            editTopic(getTableView().getItems().get(getIndex()));
+                        });
+                        mBtn.setGraphic(imageView);
+                        mBtn.setBackground(Background.EMPTY);
+
+                        //------- SETTING CELL PROPERTIES -------
+                        setGraphic(mBtn);
                         setAlignment(Pos.CENTER);
-                        btn.setGraphic(imageView);
-                        setGraphic(btn);
-                        btn.setBackground(Background.EMPTY);
+                        setMaxWidth(18);
                         setText(null);
                     } else {
                         setGraphic(null);
@@ -54,6 +73,5 @@ public class EditCallback implements Callback<TableColumn<OMTopic, String>, Tabl
                 }
             }
         };
-        return cell;
     }
 }

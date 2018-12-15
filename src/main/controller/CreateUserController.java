@@ -10,14 +10,13 @@ import net.jini.core.transaction.Transaction;
 import net.jini.core.transaction.TransactionFactory;
 import main.renderer.UserComboCell;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.util.Base64;
-
+/**
+ *
+ * CreateUserController in main.controller. This is injected using JavaFX from main.view/create_user.fxml
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ */
 public class CreateUserController {
 
     @FXML
@@ -48,6 +47,11 @@ public class CreateUserController {
         imagesCmb.getSelectionModel().select(0);
     }
 
+    /**
+     *
+     * Injected into JavaFX using create_user.fxml. Navigates to the correct scene if credentials are correct.
+     *
+     */
     public void onCreateUserButton(){
         if(createUser(usernameTxt.getText(), passwordTxt.getText(), (String) imagesCmb.getSelectionModel().getSelectedItem())){
             SceneNavigator.loadScene(SceneNavigator.READ_ALL_TOPICS);
@@ -56,6 +60,15 @@ public class CreateUserController {
         }
     }
 
+    /**
+     *
+     * Create user method, which writes a user into space.
+     *
+     * @param username username of the {@link OMUser} class
+     * @param password password of the {@link OMUser} class
+     * @param image image of the {@link OMUser} class
+     * @return {@link Boolean} that corresponds whether the creation was successful or not.
+     */
     public boolean createUser(String username, String password, String image) {
         if(username.trim().equals("") || username.isEmpty() || password.trim().equals("") || password.isEmpty()){
             return false;
@@ -87,12 +100,13 @@ public class CreateUserController {
                     OMLoggedInUser loggedInUser = new OMLoggedInUser();
                     loggedInUser.userId = template.userid;
 
-                    App.mLease = App.mSpace.write(loggedInUser, txn, 1000*60*4);
+                    App.mLease = App.mSpace.write(loggedInUser, txn, 1000*60*10);//Keeps track of how long the user is seen as logged in.
                 } else {
                     txn.abort();
                     return false;
                 }
                 txn.commit();
+                //------- END OF TRANSACTION -------
                 return true;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -104,6 +118,11 @@ public class CreateUserController {
         return false;
     }
 
+    /**
+     *
+     * Injected into JavaFX using create_user.fxml. Navigate to welcome screen.
+     *
+     */
     public void navigateWelcome(){
         SceneNavigator.loadScene(SceneNavigator.WELCOME);
     }

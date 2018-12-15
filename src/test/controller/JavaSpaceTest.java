@@ -4,13 +4,9 @@ import com.sun.tools.javac.util.List;
 import main.application.App;
 import main.model.*;
 import net.jini.core.entry.Entry;
-import net.jini.core.transaction.TransactionException;
-import net.jini.entry.UnusableEntriesException;
 import net.jini.space.JavaSpace05;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import static org.junit.Assert.fail;
 

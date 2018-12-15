@@ -59,7 +59,7 @@ public class PopupEditTopicControllerTest extends SignedInUserTest{
     }
 
     @Test
-    public void editTestUserHasNotCreatedTest() {
+    public void editUserHasNotCreatedTest() {
         PopupEditTopicController controller = new PopupEditTopicController();
         try {
             OMTopic topic = (OMTopic) App.mSpace.read(

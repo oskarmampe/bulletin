@@ -12,8 +12,22 @@ import javafx.util.Callback;
 import main.model.OMNotificationRegister;
 import main.model.OMTopic;
 
+/**
+ *
+ * Callback of a column. Responsible for cell rendering within a table. This one implements the notification topic functionality.
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ * @see Callback
+ */
 public class NotificationCallback implements Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> {
 
+    /**
+     *
+     * Register for notifications about a specific {@link OMTopic}.
+     *
+     * @param topic {@link OMTopic} to receive notifications about
+     */
     public void registerForNotifications(OMTopic topic){
         try {
             OMNotificationRegister template = new OMNotificationRegister();
@@ -27,6 +41,12 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
         }
     }
 
+    /**
+     *
+     * Unregister the user from notification for the particular {@link OMTopic}
+     *
+     * @param topic {@link OMTopic} to stop receiving notifications from
+     */
     public void unregisterForNotifications(OMTopic topic){
         try {
             OMNotificationRegister template = new OMNotificationRegister();
@@ -41,10 +61,10 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
     }
 
     @Override
-    public TableCell call(final TableColumn<OMTopic, String> param) {
-        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
+    public TableCell<OMTopic, String> call(final TableColumn<OMTopic, String> param) {
+        return new TableCell<OMTopic, String>() {
 
-            final Button btn = new Button();
+            final Button mBtn = new Button();
 
             @Override
             public void updateItem(String item, boolean empty) {
@@ -53,6 +73,7 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
                     setGraphic(null);
                     setText(null);
                 } else {
+                    //------- CHECKING FOR REGISTER -------
                     OMNotificationRegister register = null;
                     try {
                         OMNotificationRegister template = new OMNotificationRegister();
@@ -63,33 +84,37 @@ public class NotificationCallback implements Callback<TableColumn<OMTopic, Strin
                         e.printStackTrace();
                     }
 
+                    //------- SETTING IMAGE PROPERTIES -------
                     ImageView imageView = new ImageView();
                     imageView.setFitHeight(18);
                     imageView.setFitWidth(18);
-                    setMaxWidth(18);
-                    setAlignment(Pos.CENTER);
-                    btn.setGraphic(imageView);
-                    setGraphic(btn);
-                    btn.setBackground(Background.EMPTY);
 
+                    //------- SETTING BUTTON PROPERTIES -------
+                    mBtn.setGraphic(imageView);
+                    mBtn.setBackground(Background.EMPTY);
                     if(register != null) {
-                        btn.setOnAction(event -> {
+                        mBtn.setOnAction(event -> {
                             unregisterForNotifications(getTableView().getItems().get(getIndex()));
                             imageView.setImage(new Image("main/resources/images/icons/alarm.png"));
                         });
                         imageView.setImage(new Image("main/resources/images/icons/silence.png"));
                         setText(null);
                     } else {
-                        btn.setOnAction(event -> {
+                        mBtn.setOnAction(event -> {
                             registerForNotifications(getTableView().getItems().get(getIndex()));
                             imageView.setImage(new Image("main/resources/images/icons/silence.png"));
                         });
                         imageView.setImage(new Image("main/resources/images/icons/alarm.png"));
                         setText(null);
                     }
+
+                    //------- SETTING CELL PROPERTIES -------
+                    setMaxWidth(18);
+                    setAlignment(Pos.CENTER);
+                    setGraphic(mBtn);
+
                 }
             }
         };
-        return cell;
     }
 }

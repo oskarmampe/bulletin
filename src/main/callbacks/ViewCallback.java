@@ -13,15 +13,23 @@ import main.model.OMTopic;
 
 import java.util.HashMap;
 
+/**
+ *
+ * Callback of a column. Responsible for cell rendering within a table. This one implements the view comments functionality.
+ * Author: Oskar Mampe: U1564420
+ * Date: 10/11/2018
+ *
+ * @see Callback
+ */
 public class ViewCallback implements Callback<TableColumn<OMTopic, String>, TableCell<OMTopic, String>> {
 
     @Override
-    public TableCell call(final TableColumn<OMTopic, String> param) {
-        final TableCell<OMTopic, String> cell = new TableCell<OMTopic, String>() {
+    public TableCell<OMTopic, String> call(final TableColumn<OMTopic, String> param) {
+        return new TableCell<OMTopic, String>() {
 
-            final Button btn = new Button();
+            final Button mBtn = new Button();
 
-            public void viewTopic(OMTopic value){
+            private void viewTopic(OMTopic value){
                 HashMap<String, OMTopic> topicHashMap = new HashMap<>();
                 topicHashMap.put("topic", value);
                 SceneNavigator.loadScene(SceneNavigator.VIEW_TOPIC, topicHashMap);
@@ -35,21 +43,25 @@ public class ViewCallback implements Callback<TableColumn<OMTopic, String>, Tabl
                     setGraphic(null);
                     setText(null);
                 } else {
-                    btn.setOnAction(event -> {
-                        viewTopic( getTableView().getItems().get(getIndex()) );
-                    });
+                    //------- CREATING IMAGE PROPERTIES -------
                     ImageView imageView = new ImageView(new Image("main/resources/images/icons/view.png"));
                     imageView.setFitHeight(18);
                     imageView.setFitWidth(18);
+
+                    //------- CREATING BUTTON PROPERTIES -------
+                    mBtn.setOnAction(event -> {
+                        viewTopic( getTableView().getItems().get(getIndex()) );
+                    });
+                    mBtn.setGraphic(imageView);
+                    mBtn.setBackground(Background.EMPTY);
+
+                    //------- CREATING CELL PROPERTIES -------
+                    setGraphic(mBtn);
                     setMaxWidth(18);
                     setAlignment(Pos.CENTER);
-                    btn.setGraphic(imageView);
-                    setGraphic(btn);
-                    btn.setBackground(Background.EMPTY);
                     setText(null);
                 }
             }
         };
-        return cell;
     }
 }
